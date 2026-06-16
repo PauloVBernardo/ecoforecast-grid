@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
 type GridCell = {
@@ -30,7 +30,7 @@ type Mensagem = {
   texto: string;
 };
 
-export default function EcoForecastDataPage() {
+function EcoForecastConfigurationContent() {
   const searchParams = useSearchParams();
   const gridCellIdParam = searchParams.get('gridCellId');
 
@@ -58,6 +58,7 @@ export default function EcoForecastDataPage() {
   async function carregarDados() {
     try {
       setCarregando(true);
+      setMensagem({ tipo: '', texto: '' });
 
       const { data, error } = await supabase
         .from('analysis_grid')
@@ -137,6 +138,8 @@ export default function EcoForecastDataPage() {
 
   useEffect(() => {
     carregarDados();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const executarAtualizacaoForecast = async () => {
@@ -145,7 +148,6 @@ export default function EcoForecastDataPage() {
       setMensagem({ tipo: '', texto: '' });
 
       const response = await fetch('/api/jobs/daily-weather?maxCells=10');
-
       const json = await response.json();
 
       if (!response.ok || !json.ok) {
@@ -307,6 +309,12 @@ export default function EcoForecastDataPage() {
                   Processados: {job.processed_count} · Falhas:{' '}
                   {job.failed_count}
                 </p>
+
+                {job.message && (
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Mensagem: {job.message}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -383,5 +391,21 @@ export default function EcoForecastDataPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function ConfiguracaoPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-300">
+          <p className="font-medium animate-pulse">
+            Carregando dados da aplicação...
+          </p>
+        </div>
+      }
+    >
+      <EcoForecastConfigurationContent />
+    </Suspense>
   );
 }

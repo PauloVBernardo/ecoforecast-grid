@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import {
   LineChart,
@@ -299,7 +299,7 @@ function getRiskCardClass(riskLevel: RiskByDate['riskLevel']) {
   return 'border-slate-800 bg-slate-900 text-slate-400';
 }
 
-export default function EcoForecastAnalysisPage() {
+function EcoForecastAnalysisContent() {
   const searchParams = useSearchParams();
 
   const modoUrl = searchParams.get('modo');
@@ -1746,5 +1746,20 @@ export default function EcoForecastAnalysisPage() {
         </div>
       )}
     </div>
+  );
+}
+export default function EcoForecastAnalysisPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-300">
+          <p className="font-medium animate-pulse">
+            Carregando análise climática...
+          </p>
+        </div>
+      }
+    >
+      <EcoForecastAnalysisContent />
+    </Suspense>
   );
 }
