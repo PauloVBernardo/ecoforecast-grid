@@ -4,26 +4,19 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import {
-  LineChart,
-  Line,
   Bar,
-  XAxis,
-  YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  ComposedChart,
   Legend,
-  ComposedChart
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
 } from 'recharts';
 
 type ModoAnalise = 'municipio' | 'quadrante';
-
-type Region = {
-  id: string;
-  name: string;
-  latitude: number;
-  longitude: number;
-};
 
 type GridCell = {
   id: string;
@@ -76,6 +69,8 @@ type ChartDataItem = {
   precipitation: number | null;
   windSpeed: number | null;
   humidity: number | null;
+  humidityAttention: number;
+  humidityCritical: number;
   shortwaveRadiation: number | null;
   evapotranspiration: number | null;
   temperatureMaxHistoricalMean: number | null;
@@ -193,8 +188,35 @@ type MonthlyHistoricalStats = {
   umidade: StatResult | null;
 };
 
+type OperationalAlertPresentation = {
+  title: string;
+  fact: string;
+  impact: string;
+  action: string;
+  metricLabel: string;
+  metricValue: string;
+  limitLabel: string;
+  limitValue: string;
+  cardClass: string;
+  badgeClass: string;
+};
+
 const LIMITE_UMIDADE_ATENCAO = 40;
 const LIMITE_UMIDADE_CRITICA = 30;
+
+const chartMargin = { top: 8, right: 8, left: -20, bottom: 32 };
+
+const legendStyle = {
+  paddingTop: '10px',
+  fontSize: '12px',
+  color: '#cbd5e1'
+};
+
+const tooltipStyle = {
+  backgroundColor: '#0f172a',
+  borderColor: '#334155',
+  color: '#f8fafc'
+};
 
 const formatarDataCurta = (dataString: string) =>
   new Date(`${dataString}T00:00:00`)
@@ -277,7 +299,7 @@ function getVariableLabel(variableName: string) {
     temperature_forecast: 'Temperatura',
     precipitation_forecast: 'Precipitação',
     humidity_forecast: 'Umidade',
-    multivariate_weather_forecast: 'Anomalia composta'
+    multivariate_weather_forecast: 'Evento composto'
   };
 
   return labels[variableName] || variableName;
@@ -299,6 +321,169 @@ function getRiskCardClass(riskLevel: RiskByDate['riskLevel']) {
   return 'border-slate-800 bg-slate-900 text-slate-400';
 }
 
+function getOperationalAlertPresentation(
+  anomalia: AnomalyRow
+): OperationalAlertPresentation {
+  const isCritical = anomalia.risk_level === 'Crítico';
+
+  const baseClasses = isCritical
+    ? {
+        cardClass: 'border-rose-900/60 bg-rose-950/30',
+        badgeClass: 'bg-rose-500 text-white'
+      }
+    : {
+        cardClass: 'border-amber-900/50 bg-amber-950/20',
+        badgeClass: 'bg-amber-500 text-slate-950'
+      };
+
+  const metricValue = formatarNumero(anomalia.observed_value, 2);
+  const limitValue = formatarNumero(anomalia.historical_mean, 2);
+
+  if (anomalia.variable_name === 'multivariate_weather_forecast') {
+    return {
+      title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
+        isCritical ? 'Crítico' : 'Alto'
+      } · Evento Composto`,
+      fact:
+        'Anomalia climática combinada fora do padrão histórico foi projetada para o quadrante.',
+      impact:
+        'A combinação simultânea de variáveis meteorológicas pode elevar a pressão sobre a infraestrutura urbana, especialmente sistemas elétricos, áreas arborizadas, equipamentos expostos e rotinas de manutenção.',
+      action:
+        'Acionar monitoramento preventivo, revisar prontidão das equipes de campo e acompanhar a evolução da previsão nas próximas atualizações.',
+      metricLabel: 'Distância estatística',
+      metricValue,
+      limitLabel: 'Limite estatístico',
+      limitValue,
+      ...baseClasses
+    };
+  }
+
+  if (anomalia.variable_name === 'temperature_forecast') {
+    return {
+      title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
+        isCritical ? 'Crítico' : 'Alto'
+      } · Temperatura`,
+      fact:
+        'Temperatura prevista acima do comportamento histórico esperado para o quadrante.',
+      impact:
+        'O calor elevado pode aumentar demanda por resfriamento, estresse térmico em equipamentos e desconforto operacional em equipes externas.',
+      action:
+        'Acompanhar subestações, equipamentos sensíveis ao calor e frentes de trabalho expostas.',
+      metricLabel: 'Desvio observado',
+      metricValue,
+      limitLabel: 'Referência histórica',
+      limitValue,
+      ...baseClasses
+    };
+  }
+
+  if (anomalia.variable_name === 'precipitation_forecast') {
+    return {
+      title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
+        isCritical ? 'Crítico' : 'Alto'
+      } · Precipitação`,
+      fact:
+        'Precipitação prevista acima do padrão histórico esperado para o quadrante.',
+      impact:
+        'Chuva intensa pode elevar risco de alagamentos pontuais, queda de galhos, instabilidade de solo e dificuldade de deslocamento das equipes.',
+      action:
+        'Monitorar áreas críticas, drenagem urbana e rotas de atendimento operacional.',
+      metricLabel: 'Desvio observado',
+      metricValue,
+      limitLabel: 'Referência histórica',
+      limitValue,
+      ...baseClasses
+    };
+  }
+
+  if (anomalia.variable_name === 'humidity_forecast') {
+    return {
+      title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
+        isCritical ? 'Crítico' : 'Alto'
+      } · Umidade`,
+      fact:
+        'Umidade relativa projetada fora do padrão histórico esperado para o quadrante.',
+      impact:
+        'Condições muito secas podem aumentar estresse térmico, risco de vegetação seca e sensibilidade operacional em áreas expostas.',
+      action:
+        'Acompanhar áreas com vegetação urbana, equipamentos expostos e condições de trabalho em campo.',
+      metricLabel: 'Desvio observado',
+      metricValue,
+      limitLabel: 'Referência histórica',
+      limitValue,
+      ...baseClasses
+    };
+  }
+
+  return {
+    title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
+      isCritical ? 'Crítico' : 'Alto'
+    } · ${getVariableLabel(anomalia.variable_name)}`,
+    fact:
+      'Desvio estatístico relevante foi identificado na previsão do quadrante.',
+    impact:
+      'O desvio pode indicar aumento de pressão operacional sobre a infraestrutura monitorada.',
+    action:
+      'Acompanhar a evolução da previsão e priorizar o quadrante no monitoramento preventivo.',
+    metricLabel: 'Valor observado',
+    metricValue,
+    limitLabel: 'Referência',
+    limitValue,
+    ...baseClasses
+  };
+}
+
+function LoadingScreen({ label }: { label: string }) {
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-slate-950 px-4 text-slate-300">
+      <p className="animate-pulse text-center text-sm font-medium">{label}</p>
+    </div>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  tone = 'text-slate-200'
+}: {
+  label: string;
+  value: string | number;
+  tone?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+      <p className="text-xs font-bold uppercase leading-tight text-slate-500">
+        {label}
+      </p>
+      <p className={`mt-1 text-lg font-black ${tone}`}>{value}</p>
+    </div>
+  );
+}
+
+function ChartShell({
+  title,
+  description,
+  children
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
+      <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-slate-400">
+        {title}
+      </h3>
+      <p className="mb-3 text-xs leading-relaxed text-slate-500">
+        {description}
+      </p>
+      <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-xs">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function EcoForecastAnalysisContent() {
   const searchParams = useSearchParams();
 
@@ -309,10 +494,7 @@ function EcoForecastAnalysisContent() {
     modoUrl === 'quadrante' ? 'quadrante' : 'municipio'
   );
 
-  const [regions, setRegions] = useState<Region[]>([]);
   const [gridCells, setGridCells] = useState<GridCell[]>([]);
-
-  const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedGridCell, setSelectedGridCell] = useState(gridCellIdUrl || '');
 
   const [forecastRows, setForecastRows] = useState<ForecastRow[]>([]);
@@ -352,15 +534,6 @@ function EcoForecastAnalysisContent() {
       try {
         setCarregandoOpcoes(true);
 
-        const { data: regioesData, error: regioesError } = await supabase
-          .from('regions_grid')
-          .select('id, name, latitude, longitude')
-          .order('name');
-
-        if (regioesError) {
-          throw regioesError;
-        }
-
         const { data: gridCellsData, error: gridCellsError } = await supabase
           .from('analysis_grid')
           .select('id, code, center_latitude, center_longitude')
@@ -369,11 +542,6 @@ function EcoForecastAnalysisContent() {
 
         if (gridCellsError) {
           throw gridCellsError;
-        }
-
-        if (regioesData && regioesData.length > 0) {
-          setRegions(regioesData);
-          setSelectedRegion((valorAtual) => valorAtual || regioesData[0].id);
         }
 
         if (gridCellsData && gridCellsData.length > 0) {
@@ -402,7 +570,7 @@ function EcoForecastAnalysisContent() {
 
         setMensagem({
           tipo: 'erro',
-          texto: 'Erro ao carregar municípios e quadrantes.'
+          texto: 'Erro ao carregar os quadrantes ativos.'
         });
       } finally {
         setCarregandoOpcoes(false);
@@ -431,13 +599,11 @@ function EcoForecastAnalysisContent() {
       setForecastRows([]);
       setHistoricalRows([]);
       setAnomalyRows([]);
-
       setMunicipalitySummary(null);
       setMunicipalityDailyRows([]);
       setMunicipalityRankingRows([]);
 
       if (modoAnalise === 'municipio') {
-        
         const { data: summaryData, error: summaryError } = await supabase
           .from('climate_forecast_municipality_summary')
           .select('*')
@@ -489,7 +655,9 @@ function EcoForecastAnalysisContent() {
       if (!selectedGridCell) {
         throw new Error('Selecione um quadrante válido.');
       }
+
       const todayIso = getTodayIsoDate();
+
       const { data: forecasts, error: forecastError } = await supabase
         .from('climate_forecasts')
         .select(
@@ -613,6 +781,8 @@ function EcoForecastAnalysisContent() {
         precipitation: toNumberOrNull(row.precipitation),
         windSpeed: toNumberOrNull(row.wind_speed),
         humidity: toNumberOrNull(row.relative_humidity),
+        humidityAttention: LIMITE_UMIDADE_ATENCAO,
+        humidityCritical: LIMITE_UMIDADE_CRITICA,
         shortwaveRadiation: toNumberOrNull(row.shortwave_radiation),
         evapotranspiration: toNumberOrNull(row.evapotranspiration),
         temperatureMaxHistoricalMean:
@@ -742,91 +912,71 @@ function EcoForecastAnalysisContent() {
       .map((item) => item.score)
       .filter((value): value is number => value !== null);
 
-    const maiorTemperatura =
-      temperaturas.length > 0 ? Math.max(...temperaturas) : null;
-
-    const maiorVento = ventos.length > 0 ? Math.max(...ventos) : null;
-
-    const chuvaAcumulada =
-      chuvas.length > 0
-        ? chuvas.reduce((acc, value) => acc + value, 0)
-        : null;
-
-    const menorUmidade = umidades.length > 0 ? Math.min(...umidades) : null;
-
-    const maiorScoreMultivariado =
-      compositeScores.length > 0 ? Math.max(...compositeScores) : null;
-
-    const alertasCriticos = anomalyRows.filter(
-      (anomalia) => anomalia.risk_level === 'Crítico'
-    ).length;
-
-    const alertasAltos = anomalyRows.filter(
-      (anomalia) => anomalia.risk_level === 'Alto'
-    ).length;
-
     return {
-      maiorTemperatura,
-      maiorVento,
-      chuvaAcumulada,
-      menorUmidade,
-      maiorScoreMultivariado,
-      alertasCriticos,
-      alertasAltos
+      maiorTemperatura:
+        temperaturas.length > 0 ? Math.max(...temperaturas) : null,
+      maiorVento: ventos.length > 0 ? Math.max(...ventos) : null,
+      chuvaAcumulada:
+        chuvas.length > 0
+          ? chuvas.reduce((acc, value) => acc + value, 0)
+          : null,
+      menorUmidade: umidades.length > 0 ? Math.min(...umidades) : null,
+      maiorScoreMultivariado:
+        compositeScores.length > 0 ? Math.max(...compositeScores) : null,
+      alertasCriticos: anomalyRows.filter(
+        (anomalia) => anomalia.risk_level === 'Crítico'
+      ).length,
+      alertasAltos: anomalyRows.filter(
+        (anomalia) => anomalia.risk_level === 'Alto'
+      ).length
     };
   }, [anomalyRows, compositeScoreData, forecastRows]);
 
   if (carregandoOpcoes) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-300">
-        <p className="font-medium animate-pulse">
-          Carregando dados estatísticos preditivos...
-        </p>
-      </div>
-    );
+    return <LoadingScreen label="Carregando dados estatísticos preditivos..." />;
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 px-4 py-6 font-sans text-slate-100 max-w-md mx-auto shadow-2xl border-x border-slate-800 pb-20">
+    <div className="mx-auto min-h-screen w-full max-w-md border-x border-slate-800 bg-slate-950 px-4 py-6 pb-20 font-sans text-slate-100 shadow-2xl">
       <header className="mb-6 border-b border-slate-800 pb-4">
-        <h1 className="text-2xl font-bold text-sky-400">
-          Previsão de Desvios
+        <h1 className="text-lg font-bold text-sky-400">
+          Análise Operacional
         </h1>
 
-        <p className="text-xs text-slate-400">
-          Leitura das previsões, referências históricas e anomalias processadas
-          no Supabase
+        <p className="mt-1 text-xs leading-relaxed text-slate-400">
+          Avaliação diária de risco climático por visão consolidada e por
+          quadrante.
         </p>
       </header>
 
       {mensagem.texto && (
         <div
-          className={`mb-4 p-3 rounded-xl text-xs font-medium border ${
+          className={`mb-4 rounded-xl border p-3 text-xs font-medium leading-relaxed ${
             mensagem.tipo === 'sucesso'
-              ? 'bg-emerald-950/50 text-emerald-300 border-emerald-800'
-              : 'bg-rose-950/50 text-rose-300 border-rose-800'
+              ? 'border-emerald-800 bg-emerald-950/50 text-emerald-300'
+              : 'border-rose-800 bg-rose-950/50 text-rose-300'
           }`}
         >
           {mensagem.texto}
         </div>
       )}
 
-      <div className="bg-slate-900 p-4 rounded-xl border border-slate-800 mb-4 shadow-sm">
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+      <section className="mb-5 rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
           Tipo de análise
         </label>
 
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="mb-4 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setModoAnalise('municipio')}
             className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition-colors ${
               modoAnalise === 'municipio'
-                ? 'bg-sky-600 border-sky-500 text-white'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-sky-700 hover:text-slate-200'
+                ? 'border-sky-500 bg-sky-600 text-white'
+                : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-sky-700 hover:text-slate-200'
             }`}
           >
-            Município
+            Visão geral
           </button>
 
           <button
@@ -834,17 +984,17 @@ function EcoForecastAnalysisContent() {
             onClick={() => setModoAnalise('quadrante')}
             className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition-colors ${
               modoAnalise === 'quadrante'
-                ? 'bg-sky-600 border-sky-500 text-white'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-sky-700 hover:text-slate-200'
+                ? 'border-sky-500 bg-sky-600 text-white'
+                : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-sky-700 hover:text-slate-200'
             }`}
           >
             Quadrante
           </button>
         </div>
 
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
           {modoAnalise === 'quadrante'
-            ? 'Selecione o Quadrante H3'
+            ? 'Selecione o quadrante H3'
             : 'Área consolidada'}
         </label>
 
@@ -852,8 +1002,8 @@ function EcoForecastAnalysisContent() {
           {modoAnalise === 'quadrante' ? (
             <select
               value={selectedGridCell}
-              onChange={(e) => setSelectedGridCell(e.target.value)}
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-sky-500 text-slate-200"
+              onChange={(event) => setSelectedGridCell(event.target.value)}
+              className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-sky-500 focus:outline-none"
             >
               {gridCells.map((cell) => (
                 <option key={cell.id} value={cell.id}>
@@ -862,152 +1012,128 @@ function EcoForecastAnalysisContent() {
               ))}
             </select>
           ) : (
-            <div className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200">
+            <div className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-200">
               Área urbana de Goiânia
             </div>
           )}
 
           <button
+            type="button"
             onClick={carregarAnalise}
             disabled={carregandoAnalise}
-            className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow-md active:bg-sky-700 transition-colors disabled:bg-slate-800 disabled:text-slate-500"
+            className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-sky-500 active:bg-sky-700 disabled:bg-slate-800 disabled:text-slate-500"
           >
             {carregandoAnalise ? 'Carregando...' : 'Carregar'}
           </button>
         </div>
 
-        <p className="text-[10px] text-slate-500 mt-3 font-mono">
+        <p className="mt-3 rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-500">
           Alvo atual: {alvoNome}
         </p>
-      </div>
+      </section>
 
       {modoAnalise === 'municipio' && municipalitySummary && (
         <section className="space-y-5">
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-            <h2 className="text-sm font-bold text-sky-300">
+            <h2 className="text-base font-bold text-sky-300">
               Visão consolidada da área urbana de Goiânia
             </h2>
 
-            <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">
+            <p className="mt-2 text-xs leading-relaxed text-slate-500">
               Esta visão consolida os quadrantes H3 ativos do protótipo. Os
-              indicadores representam uma leitura executiva da previsão
-              operacional para os próximos dias.
+              indicadores traduzem a previsão dos próximos dias em leitura
+              executiva para priorização operacional.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Quadrantes ativos
-              </p>
-              <p className="text-lg font-black text-sky-300">
-                {municipalitySummary.total_active_quadrants}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Com previsão
-              </p>
-              <p className="text-lg font-black text-emerald-300">
-                {municipalitySummary.quadrants_with_forecast}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Com risco op.
-              </p>
-              <p className="text-lg font-black text-amber-300">
-                {municipalitySummary.quadrants_with_operational_risk}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Chuva + vento
-              </p>
-              <p className="text-lg font-black text-rose-300">
-                {municipalitySummary.rain_wind_compound_quadrants}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Maior temp.
-              </p>
-              <p className="text-lg font-black text-sky-300">
-                {municipalitySummary.max_temperature !== null
+            <KpiCard
+              label="Quadrantes ativos"
+              value={municipalitySummary.total_active_quadrants}
+              tone="text-sky-300"
+            />
+            <KpiCard
+              label="Com previsão"
+              value={municipalitySummary.quadrants_with_forecast}
+              tone="text-emerald-300"
+            />
+            <KpiCard
+              label="Com risco op."
+              value={municipalitySummary.quadrants_with_operational_risk}
+              tone="text-amber-300"
+            />
+            <KpiCard
+              label="Chuva + vento"
+              value={municipalitySummary.rain_wind_compound_quadrants}
+              tone="text-rose-300"
+            />
+            <KpiCard
+              label="Maior temp."
+              value={
+                municipalitySummary.max_temperature !== null
                   ? `${formatarNumero(municipalitySummary.max_temperature)}°C`
-                  : '--'}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Maior vento
-              </p>
-              <p className="text-lg font-black text-cyan-300">
-                {municipalitySummary.max_wind_speed !== null
+                  : '--'
+              }
+              tone="text-sky-300"
+            />
+            <KpiCard
+              label="Maior vento"
+              value={
+                municipalitySummary.max_wind_speed !== null
                   ? `${formatarNumero(
                       municipalitySummary.max_wind_speed
                     )} km/h`
-                  : '--'}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Menor umid.
-              </p>
-              <p className="text-lg font-black text-amber-300">
-                {municipalitySummary.min_relative_humidity !== null
+                  : '--'
+              }
+              tone="text-cyan-300"
+            />
+            <KpiCard
+              label="Menor umid."
+              value={
+                municipalitySummary.min_relative_humidity !== null
                   ? `${formatarNumero(
                       municipalitySummary.min_relative_humidity
                     )}%`
-                  : '--'}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
-                Score op.
-              </p>
-              <p className="text-lg font-black text-fuchsia-300">
-                {municipalitySummary.max_operational_risk_score !== null
+                  : '--'
+              }
+              tone="text-amber-300"
+            />
+            <KpiCard
+              label="Score op."
+              value={
+                municipalitySummary.max_operational_risk_score !== null
                   ? formatarNumero(
                       municipalitySummary.max_operational_risk_score,
                       0
                     )
-                  : '--'}
-              </p>
-            </div>
+                  : '--'
+              }
+              tone="text-fuchsia-300"
+            />
           </div>
 
           {municipalityRiskByDate.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">
                 Régua diária municipal
               </h3>
 
-              <div className="grid grid-cols-7 gap-1.5">
+              <div className="flex gap-2 overflow-x-auto pb-2">
                 {municipalityRiskByDate.map((item) => (
                   <div
                     key={item.dateIso}
-                    className={`rounded-lg border p-2 text-center ${getRiskCardClass(
+                    className={`min-w-[88px] rounded-lg border p-2 text-center ${getRiskCardClass(
                       item.riskLevel
                     )}`}
                     title={item.variables.join(', ') || 'Sem risco operacional'}
                   >
-                    <p className="text-[9px] font-bold">{item.data}</p>
-                    <p className="text-[9px] uppercase mt-1">
-                      {item.riskLevel}
-                    </p>
+                    <p className="text-xs font-bold">{item.data}</p>
+                    <p className="mt-1 text-xs uppercase">{item.riskLevel}</p>
                   </div>
                 ))}
               </div>
 
-              <p className="text-[10px] text-slate-500 mt-2">
+              <p className="mt-2 text-xs leading-relaxed text-slate-500">
                 A régua resume o maior nível de risco operacional observado
                 entre os quadrantes ativos em cada dia.
               </p>
@@ -1015,43 +1141,18 @@ function EcoForecastAnalysisContent() {
           )}
 
           {municipalityChartData.length > 0 && (
-            <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                Temperatura municipal agregada
-              </h3>
-
-              <p className="text-[10px] text-slate-500 mb-3">
-                Compara a média dos quadrantes com a maior temperatura prevista
-                na área urbana.
-              </p>
-
-              <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+            <>
+              <ChartShell
+                title="Temperatura municipal agregada"
+                description="Compara a média dos quadrantes com a maior temperatura prevista na área urbana."
+              >
                 <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-                  <LineChart
-                    data={municipalityChartData}
-                    margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-                  >
+                  <LineChart data={municipalityChartData} margin={chartMargin}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                     <XAxis dataKey="data" stroke="#64748b" />
                     <YAxis stroke="#64748b" />
-
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
-                        color: '#f8fafc'
-                      }}
-                    />
-
-                    <Legend
-                      verticalAlign="bottom"
-                      wrapperStyle={{
-                        paddingTop: '10px',
-                        fontSize: '10px',
-                        color: '#cbd5e1'
-                      }}
-                    />
-
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                     <Line
                       type="linear"
                       dataKey="avgMaxTemperature"
@@ -1060,7 +1161,6 @@ function EcoForecastAnalysisContent() {
                       strokeWidth={2}
                       dot
                     />
-
                     <Line
                       type="linear"
                       dataKey="maxTemperature"
@@ -1071,54 +1171,24 @@ function EcoForecastAnalysisContent() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+              </ChartShell>
 
-          {municipalityChartData.length > 0 && (
-            <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                Precipitação municipal agregada
-              </h3>
-
-              <p className="text-[10px] text-slate-500 mb-3">
-                Mostra a precipitação média dos quadrantes e o maior valor
-                diário previsto.
-              </p>
-
-              <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+              <ChartShell
+                title="Precipitação municipal agregada"
+                description="Mostra a precipitação média dos quadrantes e o maior valor diário previsto."
+              >
                 <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-                  <ComposedChart
-                    data={municipalityChartData}
-                    margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-                  >
+                  <ComposedChart data={municipalityChartData} margin={chartMargin}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                     <XAxis dataKey="data" stroke="#64748b" />
                     <YAxis stroke="#64748b" />
-
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
-                        color: '#f8fafc'
-                      }}
-                    />
-
-                    <Legend
-                      verticalAlign="bottom"
-                      wrapperStyle={{
-                        paddingTop: '10px',
-                        fontSize: '10px',
-                        color: '#cbd5e1'
-                      }}
-                    />
-
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                     <Bar
                       dataKey="avgPrecipitation"
                       name="Média dos quadrantes"
                       fill="#22c55e"
                     />
-
                     <Line
                       type="linear"
                       dataKey="maxDailyPrecipitation"
@@ -1129,48 +1199,19 @@ function EcoForecastAnalysisContent() {
                     />
                   </ComposedChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+              </ChartShell>
 
-          {municipalityChartData.length > 0 && (
-            <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-                Vento municipal agregado
-              </h3>
-
-              <p className="text-[10px] text-slate-500 mb-3">
-                Mostra a média dos quadrantes e o maior vento previsto na área
-                urbana.
-              </p>
-
-              <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+              <ChartShell
+                title="Vento municipal agregado"
+                description="Mostra a média dos quadrantes e o maior vento previsto na área urbana."
+              >
                 <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-                  <LineChart
-                    data={municipalityChartData}
-                    margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-                  >
+                  <LineChart data={municipalityChartData} margin={chartMargin}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                     <XAxis dataKey="data" stroke="#64748b" />
                     <YAxis stroke="#64748b" />
-
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
-                        color: '#f8fafc'
-                      }}
-                    />
-
-                    <Legend
-                      verticalAlign="bottom"
-                      wrapperStyle={{
-                        paddingTop: '10px',
-                        fontSize: '10px',
-                        color: '#cbd5e1'
-                      }}
-                    />
-
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                     <Line
                       type="linear"
                       dataKey="avgWindSpeed"
@@ -1179,7 +1220,6 @@ function EcoForecastAnalysisContent() {
                       strokeWidth={2}
                       dot
                     />
-
                     <Line
                       type="linear"
                       dataKey="maxWindSpeed"
@@ -1190,28 +1230,28 @@ function EcoForecastAnalysisContent() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
+              </ChartShell>
+            </>
           )}
 
           {municipalityRankingRows.length > 0 && (
             <section>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">
                 Quadrantes mais relevantes no consolidado
               </h3>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {municipalityRankingRows.map((row) => (
                   <div
                     key={row.grid_cell_id}
-                    className="rounded-xl border border-slate-800 bg-slate-900 p-3"
+                    className="rounded-xl border border-slate-800 bg-slate-900 p-4"
                   >
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-bold text-slate-100">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-base font-bold text-slate-100">
                         {row.code}
                       </p>
 
-                      <span className="text-[10px] rounded-full border border-slate-700 bg-slate-950 px-2 py-0.5 text-slate-300">
+                      <span className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-300">
                         Score{' '}
                         {row.max_operational_risk_score !== null
                           ? formatarNumero(
@@ -1222,7 +1262,7 @@ function EcoForecastAnalysisContent() {
                       </span>
                     </div>
 
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-[10px] text-slate-400">
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs leading-relaxed text-slate-400">
                       <p>Chuva forte: {row.heavy_rain_days} dia(s)</p>
                       <p>Vento forte: {row.high_wind_days} dia(s)</p>
                       <p>
@@ -1244,95 +1284,82 @@ function EcoForecastAnalysisContent() {
       )}
 
       {modoAnalise === 'quadrante' && forecastRows.length > 0 && (
-        <section className="grid grid-cols-2 gap-2 mb-5">
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
-              Maior temp.
-            </p>
-            <p className="text-lg font-black text-sky-300">
-              {resumo.maiorTemperatura !== null
+        <section className="mb-5 grid grid-cols-2 gap-2">
+          <KpiCard
+            label="Maior temp."
+            value={
+              resumo.maiorTemperatura !== null
                 ? `${resumo.maiorTemperatura.toFixed(1)}°C`
-                : '--'}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
-              Chuva acum.
-            </p>
-            <p className="text-lg font-black text-emerald-300">
-              {resumo.chuvaAcumulada !== null
+                : '--'
+            }
+            tone="text-sky-300"
+          />
+          <KpiCard
+            label="Chuva acum."
+            value={
+              resumo.chuvaAcumulada !== null
                 ? `${resumo.chuvaAcumulada.toFixed(1)} mm`
-                : '--'}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
-              Menor umid.
-            </p>
-            <p className="text-lg font-black text-amber-300">
-              {resumo.menorUmidade !== null
+                : '--'
+            }
+            tone="text-emerald-300"
+          />
+          <KpiCard
+            label="Menor umid."
+            value={
+              resumo.menorUmidade !== null
                 ? `${resumo.menorUmidade.toFixed(1)}%`
-                : '--'}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
-              Maior vento
-            </p>
-            <p className="text-lg font-black text-cyan-300">
-              {resumo.maiorVento !== null
+                : '--'
+            }
+            tone="text-amber-300"
+          />
+          <KpiCard
+            label="Maior vento"
+            value={
+              resumo.maiorVento !== null
                 ? `${resumo.maiorVento.toFixed(1)} km/h`
-                : '--'}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
-              Score comp.
-            </p>
-            <p className="text-lg font-black text-fuchsia-300">
-              {resumo.maiorScoreMultivariado !== null
+                : '--'
+            }
+            tone="text-cyan-300"
+          />
+          <KpiCard
+            label="Score comp."
+            value={
+              resumo.maiorScoreMultivariado !== null
                 ? resumo.maiorScoreMultivariado.toFixed(1)
-                : '--'}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
-              Alertas
-            </p>
-            <p className="text-lg font-black text-rose-300">
-              {resumo.alertasCriticos}C / {resumo.alertasAltos}A
-            </p>
-          </div>
+                : '--'
+            }
+            tone="text-fuchsia-300"
+          />
+          <KpiCard
+            label="Alertas"
+            value={`${resumo.alertasCriticos}C / ${resumo.alertasAltos}A`}
+            tone="text-rose-300"
+          />
         </section>
       )}
 
       {modoAnalise === 'quadrante' && riskByDate.length > 0 && (
         <section className="mb-6">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">
             Régua diária de risco
           </h3>
 
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="flex gap-2 overflow-x-auto pb-2">
             {riskByDate.map((item) => (
               <div
                 key={item.dateIso}
-                className={`rounded-lg border p-2 text-center ${getRiskCardClass(
+                className={`min-w-[88px] rounded-lg border p-2 text-center ${getRiskCardClass(
                   item.riskLevel
                 )}`}
                 title={item.variables.join(', ') || 'Sem anomalia'}
               >
-                <p className="text-[9px] font-bold">{item.data}</p>
-                <p className="text-[9px] uppercase mt-1">{item.riskLevel}</p>
+                <p className="text-xs font-bold">{item.data}</p>
+                <p className="mt-1 text-xs uppercase">{item.riskLevel}</p>
               </div>
             ))}
           </div>
 
-          <p className="text-[10px] text-slate-500 mt-2">
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
             A régua mostra o maior nível de risco calculado para cada dia,
             considerando alertas univariados e anomalia composta.
           </p>
@@ -1340,53 +1367,27 @@ function EcoForecastAnalysisContent() {
       )}
 
       {modoAnalise === 'quadrante' && chartData.length > 0 && (
-        <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-6 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-            Temperatura projetada
-          </h3>
-
-          <p className="text-[10px] text-slate-500 mb-3">
-            Compara a temperatura prevista com a média e o limite histórico do
-            mesmo mês.
-          </p>
-
-          <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+        <section className="space-y-5">
+          <ChartShell
+            title="Temperatura projetada"
+            description="Compara a temperatura prevista com a média e o limite histórico do mesmo mês."
+          >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-              >
+              <LineChart data={chartData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
-
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    color: '#f8fafc'
-                  }}
-                />
-
-                <Legend
-                  verticalAlign="bottom"
-                  wrapperStyle={{
-                    paddingTop: '10px',
-                    fontSize: '10px',
-                    color: '#cbd5e1'
-                  }}
-                />
-
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                 <Line
                   type="linear"
                   dataKey="temperatureMaxHistoricalMean"
-                  name="Média histórica do mês"
+                  name="Média histórica"
                   stroke="#64748b"
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
                   dataKey="temperatureMaxHistoricalUpper"
@@ -1396,7 +1397,6 @@ function EcoForecastAnalysisContent() {
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
                   dataKey="temperatureMax"
@@ -1405,7 +1405,6 @@ function EcoForecastAnalysisContent() {
                   strokeWidth={2}
                   dot
                 />
-
                 <Line
                   type="linear"
                   dataKey="temperatureMin"
@@ -1416,58 +1415,28 @@ function EcoForecastAnalysisContent() {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+          </ChartShell>
 
-      {modoAnalise === 'quadrante' && chartData.length > 0 && (
-        <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-6 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-            Precipitação projetada
-          </h3>
-
-          <p className="text-[10px] text-slate-500 mb-3">
-            Mostra a chuva diária prevista em comparação com a média e o P95
-            histórico do mesmo mês.
-          </p>
-
-          <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+          <ChartShell
+            title="Precipitação projetada"
+            description="Mostra a chuva diária prevista em comparação com a média e o P95 histórico do mesmo mês."
+          >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-              <ComposedChart
-                data={chartData}
-                margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-              >
+              <ComposedChart data={chartData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
-
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    color: '#f8fafc'
-                  }}
-                />
-
-                <Legend
-                  verticalAlign="bottom"
-                  wrapperStyle={{
-                    paddingTop: '10px',
-                    fontSize: '10px',
-                    color: '#cbd5e1'
-                  }}
-                />
-
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                 <Line
                   type="linear"
                   dataKey="precipitationHistoricalMean"
-                  name="Média histórica do mês"
+                  name="Média histórica"
                   stroke="#64748b"
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
                   dataKey="precipitationHistoricalP95"
@@ -1477,7 +1446,6 @@ function EcoForecastAnalysisContent() {
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Bar
                   dataKey="precipitation"
                   name="Precipitação"
@@ -1485,58 +1453,28 @@ function EcoForecastAnalysisContent() {
                 />
               </ComposedChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+          </ChartShell>
 
-      {modoAnalise === 'quadrante' && chartData.length > 0 && (
-        <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-6 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-            Vento máximo projetado
-          </h3>
-
-          <p className="text-[10px] text-slate-500 mb-3">
-            Compara o vento previsto com a média e o P95 histórico do mesmo
-            mês.
-          </p>
-
-          <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+          <ChartShell
+            title="Vento máximo projetado"
+            description="Compara o vento previsto com a média e o P95 histórico do mesmo mês."
+          >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-              >
+              <LineChart data={chartData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
-
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    color: '#f8fafc'
-                  }}
-                />
-
-                <Legend
-                  verticalAlign="bottom"
-                  wrapperStyle={{
-                    paddingTop: '10px',
-                    fontSize: '10px',
-                    color: '#cbd5e1'
-                  }}
-                />
-
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                 <Line
                   type="linear"
                   dataKey="windHistoricalMean"
-                  name="Média histórica do mês"
+                  name="Média histórica"
                   stroke="#64748b"
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
                   dataKey="windHistoricalP95"
@@ -1546,7 +1484,6 @@ function EcoForecastAnalysisContent() {
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
                   dataKey="windSpeed"
@@ -1557,68 +1494,37 @@ function EcoForecastAnalysisContent() {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-      )}
+          </ChartShell>
 
-      {modoAnalise === 'quadrante' && chartData.length > 0 && (
-        <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-6 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-            Umidade relativa projetada
-          </h3>
-
-          <p className="text-[10px] text-slate-500 mb-3">
-            Mostra quando a umidade projetada se aproxima de faixas de atenção
-            e criticidade.
-          </p>
-
-          <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+          <ChartShell
+            title="Umidade relativa projetada"
+            description="Mostra quando a umidade projetada se aproxima de faixas de atenção e criticidade."
+          >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-              >
+              <LineChart data={chartData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" domain={[0, 100]} />
-
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    color: '#f8fafc'
-                  }}
-                />
-
-                <Legend
-                  verticalAlign="bottom"
-                  wrapperStyle={{
-                    paddingTop: '10px',
-                    fontSize: '10px',
-                    color: '#cbd5e1'
-                  }}
-                />
-
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                 <Line
                   type="linear"
-                  dataKey={() => LIMITE_UMIDADE_ATENCAO}
+                  dataKey="humidityAttention"
                   name="Atenção 40%"
                   stroke="#f59e0b"
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
-                  dataKey={() => LIMITE_UMIDADE_CRITICA}
+                  dataKey="humidityCritical"
                   name="Crítico 30%"
                   stroke="#fb7185"
                   strokeWidth={2}
                   strokeDasharray="4 4"
                   dot={false}
                 />
-
                 <Line
                   type="linear"
                   dataKey="humidity"
@@ -1629,136 +1535,117 @@ function EcoForecastAnalysisContent() {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        </div>
+          </ChartShell>
+        </section>
       )}
 
       {modoAnalise === 'quadrante' && compositeScoreData.length > 0 && (
-        <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-6 shadow-sm">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-            Score multivariado de anomalia
-          </h3>
-
-          <p className="text-[10px] text-slate-500 mb-3">
-            Representa quanto a combinação de variáveis projetadas se afasta do
-            padrão histórico do quadrante.
-          </p>
-
-          <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-[10px]">
+        <div className="mt-5">
+          <ChartShell
+            title="Score multivariado de anomalia"
+            description="Representa quanto a combinação de variáveis projetadas se afasta do padrão histórico do quadrante."
+          >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
-              <ComposedChart
-                data={compositeScoreData}
-                margin={{ top: 5, right: 5, left: -25, bottom: 30 }}
-              >
+              <ComposedChart data={compositeScoreData} margin={chartMargin}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
-
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    color: '#f8fafc'
-                  }}
-                />
-
-                <Legend
-                  verticalAlign="bottom"
-                  wrapperStyle={{
-                    paddingTop: '10px',
-                    fontSize: '10px',
-                    color: '#cbd5e1'
-                  }}
-                />
-
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend verticalAlign="bottom" wrapperStyle={legendStyle} />
                 <Bar
                   dataKey="score"
                   name="Score multivariado"
                   fill="#fb7185"
                 />
-
                 <Line
                   type="linear"
                   dataKey="threshold95"
-                  name="Limite histórico P95"
+                  name="Limite histórico"
                   stroke="#fbbf24"
                   strokeWidth={2}
                   dot={false}
                 />
               </ComposedChart>
             </ResponsiveContainer>
-          </div>
+          </ChartShell>
         </div>
       )}
 
       {modoAnalise === 'quadrante' && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Alertas calculados e salvos
+        <section className="mt-6 space-y-3">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+            Alertas calculados
           </h3>
 
           {anomalyRows.length === 0 ? (
-            <div className="bg-slate-900/40 border border-slate-900 p-4 rounded-xl text-center">
-              <p className="text-xs text-slate-500">
+            <div className="rounded-xl border border-slate-900 bg-slate-900/40 p-4 text-center">
+              <p className="text-xs leading-relaxed text-slate-500">
                 🌤️ Nenhuma anomalia salva para este quadrante no horizonte de
                 previsão atual.
               </p>
             </div>
           ) : (
-            anomalyRows.map((anomalia, idx) => (
-              <div
-                key={`${anomalia.anomaly_date}-${anomalia.variable_name}-${idx}`}
-                className={`p-3 rounded-xl border shadow-sm ${
-                  anomalia.risk_level === 'Crítico'
-                    ? 'bg-rose-950/30 border-rose-900/50'
-                    : 'bg-amber-950/20 border-amber-900/40'
-                }`}
-              >
-                <div className="flex justify-between items-center mb-1.5">
-                  <span
-                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
-                      anomalia.risk_level === 'Crítico'
-                        ? 'bg-rose-500 text-white'
-                        : 'bg-amber-500 text-slate-950'
-                    }`}
-                  >
-                    {anomalia.risk_level} ·{' '}
-                    {getVariableLabel(anomalia.variable_name)}
-                  </span>
+            anomalyRows.map((anomalia, idx) => {
+              const alert = getOperationalAlertPresentation(anomalia);
 
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
-                  </span>
+              return (
+                <div
+                  key={`${anomalia.anomaly_date}-${anomalia.variable_name}-${idx}`}
+                  className={`space-y-4 rounded-xl border p-4 shadow-sm ${alert.cardClass}`}
+                >
+                  <div className="space-y-1">
+                    <span
+                      className={`inline-flex rounded-md px-2 py-1 text-xs font-bold uppercase ${alert.badgeClass}`}
+                    >
+                      {alert.title}
+                    </span>
+
+                    <p className="text-xs font-medium text-slate-400">
+                      Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 text-xs leading-relaxed text-slate-300">
+                    <div>
+                      <p className="font-bold text-slate-100">O fato</p>
+                      <p>{alert.fact}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-100">
+                        Impacto operacional
+                      </p>
+                      <p>{alert.impact}</p>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-slate-100">Recomendação</p>
+                      <p>{alert.action}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-3">
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-400">
+                      {alert.metricLabel}: {alert.metricValue}
+                    </span>
+
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-400">
+                      {alert.limitLabel}: {alert.limitValue}
+                    </span>
+                  </div>
                 </div>
-
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  {anomalia.message}
-                </p>
-
-                <div className="mt-2 text-[9px] text-slate-500 font-mono bg-slate-950/50 p-1 rounded border border-slate-900/50">
-                  Valor: {anomalia.observed_value ?? '--'} | Referência:{' '}
-                  {anomalia.historical_mean ?? '--'} | Indicador:{' '}
-                  {anomalia.sigma_score ?? '--'}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
-        </div>
+        </section>
       )}
     </div>
   );
 }
+
 export default function EcoForecastAnalysisPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-300">
-          <p className="font-medium animate-pulse">
-            Carregando análise climática...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<LoadingScreen label="Carregando análise climática..." />}>
       <EcoForecastAnalysisContent />
     </Suspense>
   );

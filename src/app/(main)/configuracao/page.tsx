@@ -218,7 +218,7 @@ function EcoForecastConfigurationContent() {
 
         <div className="grid grid-cols-4 gap-2 mb-4">
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
+            <p className="text-xs font-bold uppercase text-slate-500">
               Total
             </p>
             <p className="text-lg font-black text-slate-200">
@@ -227,7 +227,7 @@ function EcoForecastConfigurationContent() {
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
+            <p className="text-xs font-bold uppercase text-slate-500">
               Hist.
             </p>
             <p className="text-lg font-black text-emerald-400">
@@ -236,7 +236,7 @@ function EcoForecastConfigurationContent() {
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
+            <p className="text-xs font-bold uppercase text-slate-500">
               Prev.
             </p>
             <p className="text-lg font-black text-sky-400">
@@ -245,7 +245,7 @@ function EcoForecastConfigurationContent() {
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-[9px] text-slate-500 uppercase font-bold">
+            <p className="text-xs font-bold uppercase text-slate-500">
               Pend.
             </p>
             <p className="text-lg font-black text-amber-400">
@@ -265,7 +265,7 @@ function EcoForecastConfigurationContent() {
             : 'Atualizar previsão/anomalias agora'}
         </button>
 
-        <p className="text-[10px] text-slate-500 mt-3 leading-relaxed">
+        <p className="mt-3 text-xs leading-relaxed text-slate-500">
           Esta tela é administrativa. O painel operacional deve apenas ler os
           dados já processados no Supabase.
         </p>

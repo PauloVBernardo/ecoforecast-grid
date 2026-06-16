@@ -472,7 +472,7 @@ export default function EcoForecastDashboardPage() {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-300">
         <p className="font-medium animate-pulse">
-          Carregando sala de situação metropolitana...
+          Carregando sala de situação urbana...
         </p>
       </div>
     );
@@ -491,7 +491,7 @@ export default function EcoForecastDashboardPage() {
           </div>
 
           <p className="text-xs text-slate-400 mt-1">
-            Monitoramento urbano por quadrantes H3 da área urbana de Goiânia
+            Monitoramento urbano por quadrantes da área urbana de Goiânia
           </p>
 
           <p className="text-[10px] text-slate-500 mt-2">
@@ -507,7 +507,7 @@ export default function EcoForecastDashboardPage() {
           }`}
         >
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
-            Status Operacional Metropolitano
+            Status Operacional Urbano
           </h2>
 
           <p className="text-2xl font-black mt-1 text-slate-100">
