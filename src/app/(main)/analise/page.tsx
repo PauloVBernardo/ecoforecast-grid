@@ -1,6 +1,7 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import {
@@ -486,6 +487,14 @@ function ChartShell({
 
 function EcoForecastAnalysisContent() {
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  const linkClass = (path: string) =>
+    `flex flex-col items-center gap-1 text-xs font-medium transition-colors ${
+      pathname === path
+        ? 'text-sky-400 font-bold'
+        : 'text-slate-400 hover:text-slate-200'
+    }`;
 
   const modoUrl = searchParams.get('modo');
   const gridCellIdUrl = searchParams.get('gridCellId');
@@ -937,7 +946,7 @@ function EcoForecastAnalysisContent() {
   }
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-md border-x border-slate-800 bg-slate-950 px-4 py-6 pb-20 font-sans text-slate-100 shadow-2xl">
+    <div className="mx-auto min-h-screen w-full max-w-md border-x border-slate-800 bg-slate-950 px-4 py-6 pb-24 font-sans text-slate-100 shadow-2xl">
       <header className="mb-6 border-b border-slate-800 pb-4">
         <h1 className="text-lg font-bold text-sky-400">
           Análise Operacional
@@ -1639,6 +1648,28 @@ function EcoForecastAnalysisContent() {
           )}
         </section>
       )}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-md justify-around border-t border-slate-800 bg-slate-900/90 px-6 py-3 shadow-xl backdrop-blur">
+        <Link href="/" className={linkClass('/')}>
+          <span>📊</span>
+          <span>Painel</span>
+        </Link>
+
+        <Link href="/configuracao" className={linkClass('/configuracao')}>
+          <span>🗄️</span>
+          <span>Dados</span>
+        </Link>
+
+        <Link href="/analise" className={linkClass('/analise')}>
+          <span>🧠</span>
+          <span>Análise</span>
+        </Link>
+
+        <Link href="/sobre" className={linkClass('/sobre')}>
+          <span>?</span>
+          <span>Sobre</span>
+        </Link>
+      </nav>
+
     </div>
   );
 }

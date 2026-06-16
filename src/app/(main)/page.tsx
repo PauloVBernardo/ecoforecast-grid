@@ -450,7 +450,7 @@ export default function EcoForecastDashboardPage() {
   };
 
   const getFilterButtonClass = (filter: StatusFilter) =>
-    `rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+    `rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors ${
       statusFilter === filter
         ? 'bg-sky-500 text-white border-sky-400'
         : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-sky-700 hover:text-slate-200'
@@ -485,7 +485,7 @@ export default function EcoForecastDashboardPage() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-sky-400">EcoGrid</h1>
 
-            <span className="text-[10px] bg-slate-800 text-slate-400 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="text-xs bg-slate-800 text-slate-400 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
               Sala de Situação
             </span>
           </div>
@@ -494,7 +494,7 @@ export default function EcoForecastDashboardPage() {
             Monitoramento urbano por quadrantes da área urbana de Goiânia
           </p>
 
-          <p className="text-[10px] text-slate-500 mt-2">
+          <p className="text-xs text-slate-500 mt-2">
             Última atualização: {formatarDataHora(ultimaAtualizacao)}
           </p>
         </header>
@@ -526,7 +526,7 @@ export default function EcoForecastDashboardPage() {
 
           <div className="grid grid-cols-4 gap-2 mt-4">
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Sem hist.
               </p>
               <p className="text-lg font-black text-slate-400">
@@ -535,7 +535,7 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Estáveis
               </p>
               <p className="text-lg font-black text-emerald-400">
@@ -544,14 +544,14 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Alto
               </p>
               <p className="text-lg font-black text-amber-400">{totalAlto}</p>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Crítico
               </p>
               <p className="text-lg font-black text-rose-400">
@@ -568,7 +568,7 @@ export default function EcoForecastDashboardPage() {
 
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Quadrantes com previsão
               </p>
               <p className="text-lg font-black text-sky-300">
@@ -577,7 +577,7 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Maior score op.
               </p>
               <p className="text-lg font-black text-fuchsia-300">
@@ -586,7 +586,7 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Dias chuva forte
               </p>
               <p className="text-lg font-black text-emerald-300">
@@ -595,7 +595,7 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Dias vento forte
               </p>
               <p className="text-lg font-black text-cyan-300">
@@ -604,7 +604,7 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Chuva + vento
               </p>
               <p className="text-lg font-black text-amber-300">
@@ -613,7 +613,7 @@ export default function EcoForecastDashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
-              <p className="text-[9px] text-slate-500 uppercase font-bold">
+              <p className="text-xs text-slate-500 uppercase font-bold">
                 Score acum.
               </p>
               <p className="text-lg font-black text-rose-300">
@@ -622,7 +622,7 @@ export default function EcoForecastDashboardPage() {
             </div>
           </div>
 
-          <p className="text-[10px] text-slate-500 mt-3 leading-relaxed">
+          <p className="text-xs text-slate-500 mt-3 leading-relaxed">
             Os indicadores operacionais priorizam quadrantes com previsão de
             chuva forte, vento forte, eventos compostos e maior pressão
             acumulada na janela futura.
@@ -635,7 +635,7 @@ export default function EcoForecastDashboardPage() {
               Filtro de exibição
             </h3>
 
-            <span className="text-[10px] text-slate-500 font-mono">
+            <span className="text-xs text-slate-500 font-mono">
               {summaryFiltrado.length}/{summary.length}
             </span>
           </div>
@@ -705,12 +705,12 @@ export default function EcoForecastDashboardPage() {
                 Mapa Operacional
               </h3>
 
-              <p className="text-[10px] text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Quadrantes H3 analisados
               </p>
             </div>
 
-            <span className="text-[10px] text-slate-500 font-mono">
+            <span className="text-xs text-slate-500 font-mono">
               {summaryFiltrado.length} quadrantes
             </span>
           </div>
@@ -727,29 +727,29 @@ export default function EcoForecastDashboardPage() {
             <div className="grid grid-cols-4 gap-2 p-3 border-t border-slate-800 bg-slate-950/80">
               <div className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 border border-slate-800 px-2 py-1.5">
                 <span className="h-2 w-2 rounded-full bg-slate-500" />
-                <span className="text-[9px] text-slate-400">Sem hist.</span>
+                <span className="text-xs text-slate-400">Sem hist.</span>
               </div>
 
               <div className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 border border-slate-800 px-2 py-1.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="text-[9px] text-slate-400">Estável</span>
+                <span className="text-xs text-slate-400">Estável</span>
               </div>
 
               <div className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 border border-slate-800 px-2 py-1.5">
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                <span className="text-[9px] text-slate-400">Alto</span>
+                <span className="text-xs text-slate-400">Alto</span>
               </div>
 
               <div className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-900 border border-slate-800 px-2 py-1.5">
                 <span className="h-2 w-2 rounded-full bg-rose-500" />
-                <span className="text-[9px] text-slate-400">Crítico</span>
+                <span className="text-xs text-slate-400">Crítico</span>
               </div>
             </div>
           </div>
 
           {selectedPixel && (
             <div className="mt-3 rounded-xl border border-sky-900/50 bg-sky-950/20 p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-sky-300">
+              <p className="text-xs font-bold uppercase tracking-wider text-sky-300">
                 Quadrante selecionado
               </p>
 
@@ -759,7 +759,7 @@ export default function EcoForecastDashboardPage() {
                     {selectedPixel.code}
                   </p>
 
-                  <p className="text-[10px] text-slate-400 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Status:{' '}
                     <span className="text-slate-200">
                       {getStatusLabel(selectedPixel.status)}
@@ -781,7 +781,7 @@ export default function EcoForecastDashboardPage() {
                       ? `/configuracao?gridCellId=${selectedPixel.id}`
                       : `/analise?modo=quadrante&gridCellId=${selectedPixel.id}`
                   }
-                  className="shrink-0 rounded-lg bg-sky-600 px-3 py-1.5 text-[10px] font-bold uppercase text-white hover:bg-sky-500 transition-colors"
+                  className="shrink-0 rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-bold uppercase text-white hover:bg-sky-500 transition-colors"
                 >
                   {selectedPixel.status === 'Sem histórico'
                     ? 'Dados'
@@ -799,7 +799,7 @@ export default function EcoForecastDashboardPage() {
                 Quadrantes prioritários
               </h3>
 
-              <p className="text-[10px] text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Ordenados por anomalia e risco operacional previsto
               </p>
             </div>
@@ -807,7 +807,7 @@ export default function EcoForecastDashboardPage() {
             <button
               type="button"
               onClick={() => setMostrarTodos((atual) => !atual)}
-              className="text-[10px] font-bold uppercase text-sky-400 hover:text-sky-300"
+              className="text-xs font-bold uppercase text-sky-400 hover:text-sky-300"
             >
               {mostrarTodos ? 'Mostrar menos' : 'Ver todos'}
             </button>
@@ -845,7 +845,7 @@ export default function EcoForecastDashboardPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`h-7 min-w-7 px-1 rounded-md border ${ui.markerClass} flex items-center justify-center text-[10px] font-black text-white`}
+                            className={`h-7 min-w-7 px-1 rounded-md border ${ui.markerClass} flex items-center justify-center text-xs font-black text-white`}
                           >
                             {pixel.code}
                           </span>
@@ -855,21 +855,21 @@ export default function EcoForecastDashboardPage() {
                               {pixel.code}
                             </h4>
 
-                            <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                            <p className="text-xs text-slate-500 font-mono mt-0.5">
                               Lat: {Number(pixel.latitude).toFixed(3)} | Lon:{' '}
                               {Number(pixel.longitude).toFixed(3)}
                             </p>
                           </div>
                         </div>
 
-                        <p className="text-[10px] text-slate-500 mt-2">
+                        <p className="text-xs text-slate-500 mt-2">
                           Variável monitorada:{' '}
                           <span className="text-slate-300">
                             {getVariableLabel(pixel.variable_name)}
                           </span>
                         </p>
 
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-xs text-slate-500">
                           Último registro:{' '}
                           <span className="text-slate-300">
                             {formatarData(pixel.anomaly_date)}
@@ -878,7 +878,7 @@ export default function EcoForecastDashboardPage() {
                       </div>
 
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${ui.badgeClass}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase border ${ui.badgeClass}`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${ui.dotClass}`}
@@ -889,7 +889,7 @@ export default function EcoForecastDashboardPage() {
                     </div>
 
                     {operational ? (
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] text-slate-400">
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
                         <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
                           <p className="uppercase text-slate-500 font-bold">
                             Chuva forte
@@ -954,7 +954,7 @@ export default function EcoForecastDashboardPage() {
                       </div>
                     ) : (
                       <div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/60 p-2">
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-xs text-slate-500">
                           Sem previsão operacional salva para este quadrante.
                         </p>
                       </div>
@@ -964,7 +964,7 @@ export default function EcoForecastDashboardPage() {
                       <Link
                         href={destino}
                         onClick={(event) => event.stopPropagation()}
-                        className="rounded-lg border border-sky-800 bg-sky-950/40 px-3 py-1.5 text-[10px] font-bold uppercase text-sky-300 hover:bg-sky-900/60 hover:text-sky-200 transition-colors"
+                        className="rounded-lg border border-sky-800 bg-sky-950/40 px-3 py-1.5 text-xs font-bold uppercase text-sky-300 hover:bg-sky-900/60 hover:text-sky-200 transition-colors"
                       >
                         {pixel.status === 'Sem histórico'
                           ? 'Ver dados'
@@ -993,6 +993,11 @@ export default function EcoForecastDashboardPage() {
         <Link href="/analise" className={linkClass('/analise')}>
           <span>🧠</span>
           <span>Análise</span>
+        </Link>
+
+        <Link href="/sobre" className={linkClass('/sobre')}>
+          <span>?</span>
+          <span>Sobre</span>
         </Link>
       </nav>
     </div>
