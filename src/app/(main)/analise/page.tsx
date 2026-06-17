@@ -191,7 +191,8 @@ type MonthlyHistoricalStats = {
 
 type OperationalAlertPresentation = {
   title: string;
-  fact: string;
+  category: 'Energia e infraestrutura' | 'Condição ambiental' | 'Saúde pública';
+  condition: string;
   impact: string;
   action: string;
   metricLabel: string;
@@ -344,13 +345,14 @@ function getOperationalAlertPresentation(
     return {
       title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
         isCritical ? 'Crítico' : 'Alto'
-      } · Evento Composto`,
-      fact:
-        'Anomalia climática combinada fora do padrão histórico foi projetada para o quadrante.',
+      } · Evento composto`,
+      category: 'Energia e infraestrutura',
+      condition:
+        'Combinação anômala de variáveis climáticas projetada para o quadrante.',
       impact:
-        'A combinação simultânea de variáveis meteorológicas pode elevar a pressão sobre a infraestrutura urbana, especialmente sistemas elétricos, áreas arborizadas, equipamentos expostos e rotinas de manutenção.',
+        'Eventos compostos podem aumentar a pressão sobre a infraestrutura urbana, especialmente quando envolvem chuva, vento ou calor elevado. A interpretação deve considerar a combinação das variáveis, não uma variável isolada.',
       action:
-        'Acionar monitoramento preventivo, revisar prontidão das equipes de campo e acompanhar a evolução da previsão nas próximas atualizações.',
+        'Priorizar o quadrante no monitoramento preventivo e verificar se a condição prevista envolve chuva forte, vento elevado ou calor intenso.',
       metricLabel: 'Distância estatística',
       metricValue,
       limitLabel: 'Limite estatístico',
@@ -363,14 +365,15 @@ function getOperationalAlertPresentation(
     return {
       title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
         isCritical ? 'Crítico' : 'Alto'
-      } · Temperatura`,
-      fact:
-        'Temperatura prevista acima do comportamento histórico esperado para o quadrante.',
+      } · Temperatura elevada`,
+      category: 'Energia e infraestrutura',
+      condition:
+        'Temperatura prevista acima do padrão histórico esperado para o quadrante.',
       impact:
-        'O calor elevado pode aumentar demanda por resfriamento, estresse térmico em equipamentos e desconforto operacional em equipes externas.',
+        'Temperaturas elevadas podem aumentar a demanda por resfriamento, ampliar o estresse térmico em equipamentos e dificultar atividades de campo.',
       action:
-        'Acompanhar subestações, equipamentos sensíveis ao calor e frentes de trabalho expostas.',
-      metricLabel: 'Desvio observado',
+        'Monitorar áreas com equipamentos sensíveis ao calor e avaliar reforço de prontidão operacional em períodos de pico térmico.',
+      metricLabel: 'Temperatura ou desvio',
       metricValue,
       limitLabel: 'Referência histórica',
       limitValue,
@@ -382,14 +385,35 @@ function getOperationalAlertPresentation(
     return {
       title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
         isCritical ? 'Crítico' : 'Alto'
-      } · Precipitação`,
-      fact:
+      } · Chuva intensa`,
+      category: 'Energia e infraestrutura',
+      condition:
         'Precipitação prevista acima do padrão histórico esperado para o quadrante.',
       impact:
-        'Chuva intensa pode elevar risco de alagamentos pontuais, queda de galhos, instabilidade de solo e dificuldade de deslocamento das equipes.',
+        'Chuva intensa pode aumentar risco de alagamentos pontuais, queda de galhos, instabilidade de solo, dificuldade de deslocamento e restrição de acesso das equipes.',
       action:
-        'Monitorar áreas críticas, drenagem urbana e rotas de atendimento operacional.',
-      metricLabel: 'Desvio observado',
+        'Priorizar monitoramento de áreas críticas, rotas de atendimento e pontos de infraestrutura expostos a alagamento ou queda de vegetação.',
+      metricLabel: 'Precipitação ou desvio',
+      metricValue,
+      limitLabel: 'Referência histórica',
+      limitValue,
+      ...baseClasses
+    };
+  }
+
+  if (anomalia.variable_name === 'wind_forecast') {
+    return {
+      title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
+        isCritical ? 'Crítico' : 'Alto'
+      } · Vento elevado`,
+      category: 'Energia e infraestrutura',
+      condition:
+        'Velocidade do vento prevista acima do padrão esperado para o quadrante.',
+      impact:
+        'Vento elevado pode aumentar risco de queda de galhos, objetos sobre a rede, dificuldade de deslocamento e ocorrências em estruturas expostas.',
+      action:
+        'Reforçar atenção em áreas arborizadas, redes expostas e regiões com histórico de ocorrências associadas a vento.',
+      metricLabel: 'Vento ou desvio',
       metricValue,
       limitLabel: 'Referência histórica',
       limitValue,
@@ -401,18 +425,20 @@ function getOperationalAlertPresentation(
     return {
       title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
         isCritical ? 'Crítico' : 'Alto'
-      } · Umidade`,
-      fact:
-        'Umidade relativa projetada fora do padrão histórico esperado para o quadrante.',
+      } · Umidade baixa`,
+      category: 'Condição ambiental',
+      condition:
+        'Umidade relativa projetada abaixo do padrão esperado para o quadrante.',
       impact:
-        'Condições muito secas podem aumentar estresse térmico, risco de vegetação seca e sensibilidade operacional em áreas expostas.',
+        'A umidade baixa, isoladamente, não indica risco direto de interrupção de energia. Ela sinaliza condição ambiental seca, relevante para saúde pública, vegetação e risco potencial de incêndios quando combinada com outros fatores.',
       action:
-        'Acompanhar áreas com vegetação urbana, equipamentos expostos e condições de trabalho em campo.',
-      metricLabel: 'Desvio observado',
+        'Tratar como alerta ambiental auxiliar. Para risco elétrico, avaliar em conjunto com vento, calor, vegetação seca ou registros de incêndio.',
+      metricLabel: 'Umidade ou desvio',
       metricValue,
       limitLabel: 'Referência histórica',
       limitValue,
-      ...baseClasses
+      cardClass: 'border-yellow-900/50 bg-yellow-950/20',
+      badgeClass: 'bg-yellow-500 text-slate-950'
     };
   }
 
@@ -420,7 +446,8 @@ function getOperationalAlertPresentation(
     title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
       isCritical ? 'Crítico' : 'Alto'
     } · ${getVariableLabel(anomalia.variable_name)}`,
-    fact:
+    category: 'Energia e infraestrutura',
+    condition:
       'Desvio estatístico relevante foi identificado na previsão do quadrante.',
     impact:
       'O desvio pode indicar aumento de pressão operacional sobre a infraestrutura monitorada.',
@@ -1616,20 +1643,36 @@ function EcoForecastAnalysisContent() {
 
                   <div className="space-y-3 text-xs leading-relaxed text-slate-300">
                     <div>
-                      <p className="font-bold text-slate-100">O fato</p>
-                      <p>{alert.fact}</p>
+                      <p className="font-bold text-slate-100">Condição prevista</p>
+                      <p>{alert.condition}</p>
                     </div>
 
                     <div>
-                      <p className="font-bold text-slate-100">
-                        Impacto operacional
-                      </p>
+                      <p className="font-bold text-slate-100">Impacto esperado</p>
                       <p>{alert.impact}</p>
                     </div>
 
                     <div>
-                      <p className="font-bold text-slate-100">Recomendação</p>
+                      <p className="font-bold text-slate-100">Ação recomendada</p>
                       <p>{alert.action}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <span
+                      className={`inline-flex rounded-md px-2 py-1 text-xs font-bold uppercase ${alert.badgeClass}`}
+                    >
+                      {alert.title}
+                    </span>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs font-semibold text-slate-300">
+                        {alert.category}
+                      </span>
+
+                      <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-400">
+                        Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
+                      </span>
                     </div>
                   </div>
 

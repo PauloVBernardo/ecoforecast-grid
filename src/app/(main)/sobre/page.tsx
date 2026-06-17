@@ -43,7 +43,7 @@ const glossary: GlossaryItem[] = [
   {
     term: 'Score operacional',
     description:
-      'Indicador simplificado de priorização. Quanto maior o score, maior a pressão climática prevista sobre o quadrante.'
+      'Indicador de priorização voltado à infraestrutura urbana e continuidade elétrica. Considera principalmente chuva forte, vento forte, eventos compostos e temperatura elevada.'
   },
   {
     term: 'P95',
@@ -51,9 +51,14 @@ const glossary: GlossaryItem[] = [
       'Percentil 95 da série histórica. Representa um valor alto, superado por cerca de 5% dos registros históricos.'
   },
   {
+  term: 'Condição ambiental',
+  description:
+    'Camada auxiliar que reúne variáveis como umidade baixa, radiação elevada, evapotranspiração e solo seco. Essas variáveis ajudam na interpretação ambiental, mas não indicam sozinhas risco direto de interrupção de energia.'
+},
+  {
     term: 'DEC/FEC',
     description:
-      'Indicadores regulatórios da ANEEL usados para avaliar continuidade do fornecimento de energia. Podem ser usados futuramente para validar a relação entre pressão climática e desempenho operacional.'
+      'Indicadores regulatórios da ANEEL usados para validação temporal agregada. Permitem comparar a pressão climática mensal do EcoGrid com o desempenho mensal de continuidade do fornecimento.'
   }
 ];
 
@@ -260,14 +265,15 @@ export default function SobrePage() {
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
                 <h3 className="text-sm font-bold text-slate-100">
-                  ANEEL DEC/FEC
+                  Validação regulatória ANEEL DEC/FEC
                 </h3>
 
                 <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                  Base regulatória prevista como próxima camada de validação. Os
-                  indicadores DEC e FEC podem ajudar a comparar pressão climática
-                  mensal com desempenho de continuidade do fornecimento de
-                  energia.
+                  Os indicadores DEC e FEC são usados como validação temporal agregada.
+                  Como esses dados são mensais e associados a conjuntos de unidades
+                  consumidoras, eles não validam diretamente cada quadrante H3. A comparação
+                  proposta avalia se meses com maior pressão climática operacional no EcoGrid
+                  coincidem com meses de pior desempenho relativo de continuidade.
                 </p>
               </div>
             </div>
@@ -291,10 +297,149 @@ export default function SobrePage() {
               </p>
 
               <p>
-                O score operacional é uma simplificação para priorização. Ele
-                combina eventos como chuva forte, vento forte, baixa umidade,
-                calor elevado e eventos compostos.
+                O score operacional é uma simplificação para priorização de
+                risco climático voltado à infraestrutura urbana e continuidade
+                elétrica. Ele considera principalmente chuva forte, vento forte,
+                eventos compostos e temperatura elevada. Umidade baixa isolada
+                é tratada como condição ambiental auxiliar, não como risco
+                elétrico direto.
               </p>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-sky-900/60 bg-sky-950/20 p-4">
+            <h2 className="text-base font-bold text-sky-200">
+              Validação regulatória
+            </h2>
+
+            <p className="mt-2 text-xs leading-relaxed text-slate-300">
+              A validação com DEC/FEC foi realizada de forma temporal e
+              agregada, comparando meses com dados simultâneos do EcoGrid e da
+              base pública da ANEEL para a Equatorial GO.
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <p className="text-xs font-bold uppercase text-slate-500">
+                  Período comparável
+                </p>
+                <p className="mt-1 text-sm font-black text-sky-300">
+                  35 meses
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  jun/2023 a abr/2026
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <p className="text-xs font-bold uppercase text-slate-500">
+                  Base regulatória
+                </p>
+                <p className="mt-1 text-sm font-black text-sky-300">
+                  DEC/FEC
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Equatorial GO
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <p className="text-xs font-bold uppercase text-slate-500">
+                  Score x DEC
+                </p>
+                <p className="mt-1 text-sm font-black text-emerald-300">
+                  0,375
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Correlação positiva moderada
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <p className="text-xs font-bold uppercase text-slate-500">
+                  Score x FEC
+                </p>
+                <p className="mt-1 text-sm font-black text-emerald-300">
+                  0,441
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Melhor aderência observada
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <details className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <summary className="cursor-pointer text-sm font-bold text-slate-100">
+                  Como interpretar o resultado?
+                </summary>
+
+                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-400">
+                  <p>
+                    A correlação positiva indica que meses com maior pressão
+                    climático-operacional no EcoGrid tendem a coincidir com
+                    meses de maior DEC e FEC médio apurado.
+                  </p>
+
+                  <p>
+                    A aderência foi mais forte com FEC, o que é coerente com a
+                    hipótese de que eventos climáticos elevam a frequência de
+                    ocorrências. Já o DEC depende também de fatores como tempo
+                    de atendimento, logística, acesso às áreas afetadas e
+                    complexidade da falha.
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <summary className="cursor-pointer text-sm font-bold text-slate-100">
+                  O que foi comparado?
+                </summary>
+
+                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-400">
+                  <p>
+                    O EcoGrid foi agregado mensalmente a partir do histórico
+                    climático dos quadrantes H3 ativos. Esse agregado foi
+                    comparado com os indicadores DEC e FEC mensais importados da
+                    base pública da ANEEL.
+                  </p>
+
+                  <p>
+                    A comparação não é espacial por quadrante, pois DEC/FEC são
+                    divulgados por conjuntos de unidades consumidoras e por mês.
+                    Portanto, a validação é temporal e exploratória.
+                  </p>
+                </div>
+              </details>
+
+              <details className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <summary className="cursor-pointer text-sm font-bold text-slate-100">
+                  Limitações da validação
+                </summary>
+
+                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-400">
+                  <p>
+                    Nesta versão, a validação utiliza DEC e FEC apurados médios,
+                    pois os limites regulatórios não foram integrados à base
+                    final. Assim, o resultado não usa DEC/FEC relativo ao limite
+                    regulatório.
+                  </p>
+
+                  <p>
+                    A análise não demonstra causalidade direta. Ela indica
+                    aderência temporal entre pressão climática-operacional e
+                    desempenho de continuidade, mas fatores operacionais e
+                    estruturais também influenciam os indicadores.
+                  </p>
+
+                  <p>
+                    Os meses de jan/2023 a mai/2023 não foram comparados por
+                    ausência de histórico climático no EcoGrid, e os meses de
+                    mai/2026 e jun/2026 não foram comparados por ausência de
+                    DEC/FEC disponível.
+                  </p>
+                </div>
+              </details>
             </div>
           </section>
 
@@ -319,6 +464,14 @@ export default function SobrePage() {
               <p>
                 Os indicadores DEC/FEC são úteis para validação regulatória
                 agregada, mas não substituem dados operacionais evento a evento.
+              </p>
+
+              <p>
+                Eventos climáticos de grande escala, como El Niño e La Niña,
+                ainda não são usados como variáveis explícitas do modelo. Nesta
+                versão, a sazonalidade é tratada pela comparação mensal do
+                histórico climático, e a inclusão de índices climáticos externos
+                fica como evolução metodológica futura.
               </p>
             </div>
           </section>
