@@ -343,7 +343,7 @@ export default function SobrePage() {
                   Autor
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
-                  Victor — Norven
+                  Paulo Vitor Bernardo — paulo.bernardo@norven.com.br
                 </p>
               </div>
 
