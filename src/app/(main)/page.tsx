@@ -33,6 +33,8 @@ type OperationalSummary = {
   max_temperature: number | null;
   max_operational_risk_score: number | null;
   accumulated_operational_risk_score: number | null;
+  score_op_quadrante: number | null;
+  nivel_risco_quadrante: string | null;
 };
 
 type EcoGridLeafletMapProps = {
@@ -182,10 +184,13 @@ export default function EcoForecastDashboardPage() {
 
         const { data: operationalData, error: operationalError } =
           await supabase
-            .from('climate_forecast_operational_summary')
+            .from('climate_forecast_quadrant_ranking')
             .select(
-              'grid_cell_id, code, forecast_days, heavy_rain_days, high_wind_days, dry_air_days, rain_wind_compound_days, hot_dry_days, max_daily_precipitation, accumulated_precipitation, max_wind_speed, min_relative_humidity, max_temperature, max_operational_risk_score, accumulated_operational_risk_score'
-            );
+              'grid_cell_id, code, forecast_days, heavy_rain_days, high_wind_days, dry_air_days, rain_wind_compound_days, hot_dry_days, max_daily_precipitation, accumulated_precipitation, max_wind_speed, min_relative_humidity, max_temperature, max_operational_risk_score, accumulated_operational_risk_score, score_op_quadrante, nivel_risco_quadrante'
+            )
+            .order('score_op_quadrante', { ascending: false })
+            .order('accumulated_operational_risk_score', { ascending: false })
+            .order('max_operational_risk_score', { ascending: false });
 
         if (operationalError) {
           throw operationalError;
@@ -221,6 +226,14 @@ export default function EcoForecastDashboardPage() {
         };
 
         const getScoreOperacional = (gridCellId: string) => {
+          const row = getOperationalRow(gridCellId);
+
+          const scoreQuadrante = Number(row?.score_op_quadrante ?? 0);
+
+          if (scoreQuadrante > 0) {
+            return scoreQuadrante;
+          }
+
           const accumulatedScore = getAccumulatedScore(gridCellId);
 
           if (accumulatedScore > 0) {
@@ -497,7 +510,11 @@ export default function EcoForecastDashboardPage() {
       ),
       maiorScore: values.reduce(
         (acc, item) =>
-          Math.max(acc, toNumber(item.max_operational_risk_score)),
+          Math.max(
+            acc,
+            toNumber(item.score_op_quadrante) ||
+              Math.round(toNumber(item.accumulated_operational_risk_score))
+          ),
         0
       ),
       scoreAcumulado: values.reduce(
@@ -1031,7 +1048,8 @@ export default function EcoForecastDashboardPage() {
                           </p>
                           <p className="text-slate-200">
                             {formatNumber(
-                              operational.accumulated_operational_risk_score,
+                              operational.score_op_quadrante ??
+                                Math.round(toNumber(operational.accumulated_operational_risk_score)),
                               0
                             )}
                           </p>
