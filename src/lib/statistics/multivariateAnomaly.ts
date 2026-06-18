@@ -197,6 +197,7 @@ function getMainDrivers(zVector: number[]) {
     .map((item) => item.label);
 }
 
+
 export function calcularAnomaliasMultivariadas(params: {
   historicalRows: ClimateVector[];
   forecastRows: MultivariateForecastRow[];
@@ -254,13 +255,13 @@ export function calcularAnomaliasMultivariadas(params: {
       threshold95: Number(threshold95.toFixed(2)),
       threshold99: Number(threshold99.toFixed(2)),
       mainDrivers,
-      message: `ANOMALIA CLIMÁTICA COMPOSTA: A combinação projetada de ${mainDrivers.join(
+      message: `ANOMALIA ESTATÍSTICA COMPOSTA: A combinação projetada de ${mainDrivers.join(
         ', '
       )} apresenta distância multivariada de ${distance.toFixed(
         2
-      )}, acima do limite histórico de controle ${
+      )}, acima do limite estatístico histórico ${
         riskLevel === 'Crítico' ? 'P99' : 'P95'
-      }. O evento deve ser tratado como desvio climático composto, pois resulta da combinação entre variáveis correlacionadas, não apenas de um pico isolado.`
+      }. Este resultado indica uma combinação climática atípica para o padrão histórico do quadrante. A classificação é estatística e deve ser interpretada como sinal complementar, não como confirmação automática de chuva forte, vento severo, umidade crítica ou calor extremo. A avaliação operacional deve considerar também os gráficos individuais e o score operacional do quadrante.`
     });
   });
 

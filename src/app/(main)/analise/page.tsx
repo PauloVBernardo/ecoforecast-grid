@@ -193,7 +193,11 @@ type MonthlyHistoricalStats = {
 
 type OperationalAlertPresentation = {
   title: string;
-  category: 'Energia e infraestrutura' | 'Condição ambiental' | 'Saúde pública';
+  category:
+    | 'Energia e infraestrutura'
+    | 'Condição ambiental'
+    | 'Saúde pública'
+    | 'Sinal estatístico multivariado';
   condition: string;
   impact: string;
   action: string;
@@ -298,12 +302,15 @@ function calcularEstatisticaHistorica(values: unknown[]): StatResult | null {
   };
 }
 
-function getVariableLabel(variableName: string) {
+function getVariableLabel(variableName?: string | null) {
+  if (!variableName) return 'Sem anomalia';
+
   const labels: Record<string, string> = {
     temperature_forecast: 'Temperatura',
     precipitation_forecast: 'Precipitação',
+    wind_forecast: 'Vento',
     humidity_forecast: 'Umidade',
-    multivariate_weather_forecast: 'Evento composto'
+    multivariate_weather_forecast: 'Anomalia estatística composta'
   };
 
   return labels[variableName] || variableName;
@@ -345,21 +352,26 @@ function getOperationalAlertPresentation(
 
   if (anomalia.variable_name === 'multivariate_weather_forecast') {
     return {
-      title: `${isCritical ? '🚨' : '⚠️'} Alerta ${
-        isCritical ? 'Crítico' : 'Alto'
-      } · Evento composto`,
-      category: 'Energia e infraestrutura',
+      title: `📊 Anomalia estatística composta · ${
+        isCritical ? 'Crítica' : 'Alta'
+      }`,
+      category: 'Sinal estatístico multivariado',
       condition:
-        'Combinação anômala de variáveis climáticas projetada para o quadrante.',
+        'Combinação estatisticamente atípica de variáveis climáticas projetada para o quadrante. A classificação foi gerada pela distância multivariada em relação ao padrão histórico local.',
       impact:
-        'Eventos compostos podem aumentar a pressão sobre a infraestrutura urbana, especialmente quando envolvem chuva, vento ou calor elevado. A interpretação deve considerar a combinação das variáveis, não uma variável isolada.',
+        'Este resultado indica que a combinação das variáveis está rara para o histórico do quadrante. Ele não significa, isoladamente, chuva forte, vento severo, umidade crítica ou calor extremo.',
       action:
-        'Priorizar o quadrante no monitoramento preventivo e verificar se a condição prevista envolve chuva forte, vento elevado ou calor intenso.',
-      metricLabel: 'Distância estatística',
+        'Usar como sinal complementar de análise. Antes de tratar como risco operacional crítico, verificar os gráficos individuais e o score operacional do quadrante.',
+      metricLabel: 'Distância multivariada',
       metricValue,
-      limitLabel: 'Limite estatístico',
+      limitLabel: isCritical ? 'Limite estatístico P99' : 'Limite estatístico P95',
       limitValue,
-      ...baseClasses
+      cardClass: isCritical
+        ? 'border-fuchsia-900/60 bg-fuchsia-950/20'
+        : 'border-violet-900/50 bg-violet-950/20',
+      badgeClass: isCritical
+        ? 'bg-fuchsia-500 text-white'
+        : 'bg-violet-500 text-white'
     };
   }
 
@@ -513,6 +525,7 @@ function ChartShell({
     </div>
   );
 }
+
 
 function EcoForecastAnalysisContent() {
   const searchParams = useSearchParams();
@@ -1428,8 +1441,9 @@ function EcoForecastAnalysisContent() {
           </div>
 
           <p className="mt-2 text-xs leading-relaxed text-slate-500">
-            A régua mostra o maior nível de risco calculado para cada dia,
-            considerando alertas univariados e anomalia composta.
+            A régua mostra o maior nível de alerta estatístico salvo para cada dia.
+            Para diferenciar risco operacional de anomalia estatística composta, consulte
+            os cards detalhados e os gráficos individuais.
           </p>
         </section>
       )}
@@ -1690,22 +1704,14 @@ function EcoForecastAnalysisContent() {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <span
-                      className={`inline-flex rounded-md px-2 py-1 text-xs font-bold uppercase ${alert.badgeClass}`}
-                    >
-                      {alert.title}
+                  <div className="flex flex-wrap gap-2">
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs font-semibold text-slate-300">
+                      {alert.category}
                     </span>
 
-                    <div className="flex flex-wrap gap-2">
-                      <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs font-semibold text-slate-300">
-                        {alert.category}
-                      </span>
-
-                      <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-400">
-                        Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
-                      </span>
-                    </div>
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-400">
+                      Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
+                    </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-3">

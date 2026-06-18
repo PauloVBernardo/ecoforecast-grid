@@ -24,7 +24,8 @@ A aplicação busca responder perguntas como:
 
 - Quais quadrantes urbanos apresentam maior pressão climática prevista?
 - Há previsão de chuva forte, vento, calor elevado ou eventos compostos?
-- A condição climática atual se afasta do padrão histórico daquele quadrante?
+- A condição climática prevista se afasta do padrão histórico daquele quadrante?
+- A combinação das variáveis climáticas previstas é estatisticamente atípica para o histórico local?
 - Meses com maior pressão climática operacional coincidem com pior desempenho de continuidade elétrica?
 - O score climático do EcoGrid apresenta aderência temporal com DEC/FEC?
 
@@ -114,19 +115,73 @@ Fluxo geral:
 5. Preparação da base ANEEL DEC/FEC.
 6. Agregação mensal para validação temporal.
 
-### 4.2 Linha de base estatística
+### 4.2 Linha de base estatística univariada
 
-Para cada quadrante, o sistema compara valores previstos com o comportamento histórico. A lógica usa média histórica e desvio padrão para identificar desvios relevantes.
+Para cada quadrante, o sistema compara valores previstos com o comportamento histórico local. A lógica usa média histórica, desvio padrão e percentis para identificar desvios relevantes por variável.
 
-A leitura estatística segue a ideia de um score padronizado:
+A leitura estatística univariada segue a ideia de um score padronizado:
 
 ```text
-z = (valor observado ou previsto - média histórica) / desvio padrão histórico
+z = (valor previsto - média histórica) / desvio padrão histórico
 ```
 
-Desvios mais altos indicam maior afastamento do padrão esperado para aquele local e período.
+Desvios mais altos indicam maior afastamento do padrão esperado para aquele local e período. Essa camada apoia a interpretação individual de temperatura, chuva, vento e umidade nos gráficos da tela de análise.
 
-### 4.3 Score operacional climático
+### 4.3 Análise multivariada de anomalia estatística
+
+O projeto também implementa uma camada de **anomalia estatística composta** no arquivo:
+
+```text
+src/lib/statistics/multivariateAnomaly.ts
+```
+
+Essa rotina é chamada no fluxo diário de atualização de dados, a partir do `dailyWeatherJob.ts`, e avalia se a combinação das variáveis climáticas previstas é atípica em relação ao histórico do próprio quadrante.
+
+A análise usa as seguintes variáveis climáticas em conjunto:
+
+- Temperatura máxima
+- Temperatura mínima
+- Precipitação
+- Velocidade do vento
+- Umidade relativa
+- Radiação solar de onda curta
+- Evapotranspiração
+- Umidade do solo superficial
+
+O procedimento é:
+
+1. Converter cada dia histórico em um vetor climático multivariado.
+2. Remover linhas incompletas para garantir consistência do vetor.
+3. Padronizar as variáveis históricas por média e desvio padrão.
+4. Calcular a matriz de covariância dos vetores padronizados.
+5. Aplicar regularização diagonal (`RIDGE = 0.05`) para reduzir instabilidade numérica.
+6. Inverter a matriz de covariância.
+7. Calcular a forma quadrática:
+
+```text
+D² = zᵀ Σ⁻¹ z
+```
+
+Essa medida é equivalente à lógica de **distância de Mahalanobis** aplicada sobre variáveis padronizadas. Ela considera a relação conjunta entre variáveis e não apenas o pico isolado de uma variável.
+
+Os limites de alerta são calculados empiricamente a partir das próprias distâncias históricas do quadrante:
+
+```text
+P95 → Alerta Alto
+P99 → Alerta Crítico
+```
+
+A saída é gravada como `multivariate_weather_forecast` na tabela `grid_anomalies`, com:
+
+- distância multivariada calculada;
+- limite estatístico usado;
+- nível estatístico de alerta;
+- principais variáveis que mais contribuíram para o desvio;
+- mensagem explicativa da anomalia estatística composta.
+
+Essa camada deve ser interpretada como **sinal estatístico complementar**. Ela indica uma combinação rara de variáveis para o histórico local, mas não significa automaticamente chuva forte, vento severo, umidade crítica ou calor extremo. A leitura operacional deve considerar também os gráficos individuais e o score operacional do quadrante.
+
+### 4.4 Score operacional climático
 
 Além da detecção estatística, o projeto utiliza um score operacional voltado à priorização de risco para infraestrutura urbana e continuidade elétrica.
 
@@ -139,7 +194,9 @@ O score principal considera:
 
 Variáveis como umidade baixa, radiação elevada, evapotranspiração e solo seco são tratadas como camada ambiental auxiliar. Elas ajudam a interpretar contexto de saúde pública, vegetação e condição ambiental, mas não são consideradas isoladamente como risco elétrico direto.
 
-### 4.4 Views operacionais no PostgreSQL
+O score operacional é diferente da anomalia estatística multivariada. O score traduz a previsão em uma escala prática de priorização operacional, enquanto a análise multivariada identifica combinações climáticas estatisticamente raras.
+
+### 4.5 Views operacionais no PostgreSQL
 
 Parte importante da lógica analítica foi movida para views no Supabase/PostgreSQL, permitindo que o front-end consuma dados já agregados e consistentes.
 
@@ -148,6 +205,7 @@ Views principais:
 ```text
 climate_forecast_operational_indicators
 climate_forecast_operational_summary
+climate_forecast_quadrant_ranking
 climate_forecast_municipality_daily_summary
 climate_forecast_municipality_summary
 ecogrid_monthly_operational_pressure
@@ -281,6 +339,16 @@ Campos principais:
 - `sigma_score`
 - `risk_level`
 - `message`
+
+Para anomalias univariadas, os campos representam valor previsto, média histórica, desvio padrão e score padronizado.
+
+Para `multivariate_weather_forecast`, a interpretação é diferente:
+
+- `observed_value`: distância multivariada calculada;
+- `historical_mean`: limite estatístico usado na comparação;
+- `standard_deviation`: limite adicional de referência, quando salvo pelo pipeline;
+- `risk_level`: nível estatístico do desvio, `Alto` ou `Crítico`;
+- `message`: explicação da anomalia estatística composta.
 
 ### `aneel_dec_fec_monthly`
 
@@ -417,6 +485,21 @@ Fenômenos como El Niño e La Niña ainda não entram como variáveis explícita
 
 O modelo ainda não cruza os quadrantes H3 com ativos físicos da rede, como alimentadores, transformadores, subestações, chaves, trechos de rede ou vegetação próxima.
 
+### 9.9 Anomalia multivariada não é risco operacional direto
+
+A distância multivariada identifica combinações estatisticamente raras de variáveis climáticas. Um alerta crítico nessa camada significa criticidade estatística, não necessariamente risco operacional crítico direto.
+
+Por isso, a interpretação deve separar:
+
+- **Anomalia estatística composta:** combinação rara no histórico climático do quadrante.
+- **Score operacional:** priorização prática voltada a infraestrutura urbana e continuidade elétrica.
+
+A decisão operacional deve considerar o conjunto: gráficos individuais, score operacional, anomalia multivariada e contexto do quadrante.
+
+### 9.10 PCA ainda não implementada
+
+A versão atual implementa distância multivariada/Mahalanobis para anomalia estatística composta, mas ainda não implementa PCA. A análise de componentes principais permanece como evolução futura para reduzir dimensionalidade, avaliar redundância entre variáveis e refinar a leitura multivariada.
+
 ---
 
 ## 10. Roadmap
@@ -429,7 +512,7 @@ Evoluções previstas:
 4. Incluir dados de vegetação, como NDVI, para risco de queda de galhos.
 5. Incorporar índices climáticos externos, como ENSO, para análise de contexto sazonal.
 6. Calibrar o score operacional com histórico real de ocorrências.
-7. Evoluir a detecção estatística para métodos multivariados, como distância de Mahalanobis.
+7. Incorporar PCA para redução de dimensionalidade e refinamento da análise multivariada.
 8. Adicionar camada de priorização operacional por criticidade de ativo.
 
 ---
@@ -437,5 +520,7 @@ Evoluções previstas:
 ## 11. Síntese executiva
 
 O EcoGrid Maps demonstra que é possível transformar dados climáticos públicos em uma leitura operacional territorializada para apoiar decisões em infraestrutura urbana e continuidade elétrica.
+
+A aplicação combina três camadas analíticas principais: leitura estatística univariada, anomalia estatística multivariada com lógica de Mahalanobis e score operacional climático para priorização.
 
 A validação com DEC/FEC mostra aderência temporal positiva entre o score climático-operacional e os indicadores regulatórios da Equatorial GO, especialmente FEC. Isso reforça o potencial da aplicação como ferramenta exploratória de antecipação, priorização e inteligência climática urbana.

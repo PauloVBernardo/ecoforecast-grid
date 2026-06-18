@@ -532,7 +532,7 @@ export default function EcoForecastDashboardPage() {
       temperature_forecast: 'Temperatura',
       precipitation_forecast: 'Precipitação',
       humidity_forecast: 'Umidade',
-      multivariate_weather_forecast: 'Anomalia composta'
+      multivariate_weather_forecast: 'Anomalia estatística composta'
     };
 
     return labels[variableName] || variableName;
