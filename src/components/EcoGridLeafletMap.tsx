@@ -7,6 +7,9 @@ import type { LayerGroup, Map as LeafletMap } from 'leaflet';
 type RiskStatus = 'Sem histórico' | 'Normal' | 'Alto' | 'Crítico' | string;
 
 export type PixelSummary = {
+  operational_risk_score?: number;
+  max_operational_risk_score?: number;
+  accumulated_operational_risk_score?: number;
   id: string;
   code: string;
   name: string;

@@ -49,6 +49,8 @@ function EcoForecastConfigurationContent() {
   const [executandoJob, setExecutandoJob] = useState(false);
   const [mensagem, setMensagem] = useState<Mensagem>({ tipo: '', texto: '' });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const totalPendentes = useMemo(
     () => gridCells.filter((cell) => cell.history_count === 0).length,
     [gridCells]
@@ -152,6 +154,16 @@ function EcoForecastConfigurationContent() {
   }, []);
 
   const executarAtualizacaoForecast = async () => {
+    if (isProduction) {
+      setMensagem({
+        tipo: 'erro',
+        texto:
+          'A atualização manual está desabilitada na versão pública. Esta tela está disponível apenas para consulta e auditoria dos dados.'
+      });
+
+      return;
+    }
+
     try {
       setExecutandoJob(true);
       setMensagem({ tipo: '', texto: '' });
@@ -265,19 +277,45 @@ function EcoForecastConfigurationContent() {
 
         <button
           type="button"
+          disabled={isProduction || executandoJob}
           onClick={executarAtualizacaoForecast}
-          disabled={executandoJob}
-          className="w-full bg-sky-600 text-white px-3 py-2 rounded-lg text-xs font-bold uppercase hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-600 transition-colors shadow-md"
+          title={
+            isProduction
+              ? 'A atualização manual está desabilitada na versão pública.'
+              : 'Executar atualização de previsão e anomalias.'
+          }
+          className={`w-full rounded-lg px-4 py-3 text-sm font-bold transition ${
+            isProduction || executandoJob
+              ? 'cursor-not-allowed bg-slate-700 text-slate-400'
+              : 'bg-sky-500 text-white hover:bg-sky-400'
+          }`}
         >
-          {executandoJob
-            ? 'Atualizando lote...'
-            : 'Atualizar previsão/anomalias agora'}
+          {isProduction
+            ? 'ATUALIZAÇÃO DESABILITADA NA VERSÃO PÚBLICA'
+            : executandoJob
+              ? 'ATUALIZANDO...'
+              : 'ATUALIZAR PREVISÃO/ANOMALIAS AGORA'}
         </button>
+
+        {isProduction && (
+          <div className="mt-3 rounded-lg border border-amber-900/60 bg-amber-950/20 p-3">
+            <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
+              Modo somente leitura
+            </p>
+
+            <p className="mt-2 text-xs leading-relaxed text-amber-100/80">
+              A atualização manual foi desabilitada na versão pública. Esta tela
+              permanece disponível apenas para consulta do status dos dados,
+              auditoria das últimas execuções e transparência do pipeline.
+            </p>
+          </div>
+        )}
 
         <p className="mt-3 text-xs leading-relaxed text-slate-500">
           Esta tela é administrativa. O painel operacional deve apenas ler os
           dados já processados no Supabase.
         </p>
+
       </section>
 
       <section className="mb-5 bg-slate-900 p-4 rounded-xl border border-slate-800">

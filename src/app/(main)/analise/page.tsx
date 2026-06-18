@@ -153,6 +153,8 @@ type MunicipalityRankingRow = {
   max_temperature: number | null;
   max_operational_risk_score: number | null;
   accumulated_operational_risk_score: number | null;
+  score_op_quadrante: number | null;
+  nivel_risco_quadrante: string | null;
 };
 
 type MunicipalityChartItem = {
@@ -659,23 +661,59 @@ function EcoForecastAnalysisContent() {
         }
 
         const { data: rankingData, error: rankingError } = await supabase
-          .from('climate_forecast_operational_summary')
+          .from('climate_forecast_quadrant_ranking')
           .select(
-            'grid_cell_id, code, forecast_days, heavy_rain_days, high_wind_days, dry_air_days, rain_wind_compound_days, hot_dry_days, max_daily_precipitation, avg_daily_precipitation, accumulated_precipitation, max_wind_speed, min_relative_humidity, max_temperature, max_operational_risk_score, accumulated_operational_risk_score'
+            'grid_cell_id, code, forecast_days, heavy_rain_days, high_wind_days, dry_air_days, rain_wind_compound_days, hot_dry_days, max_daily_precipitation, avg_daily_precipitation, accumulated_precipitation, max_wind_speed, min_relative_humidity, max_temperature, max_operational_risk_score, accumulated_operational_risk_score, score_op_quadrante, nivel_risco_quadrante'
           )
-          .order('max_operational_risk_score', { ascending: false })
+          .order('score_op_quadrante', { ascending: false })
           .order('accumulated_operational_risk_score', { ascending: false })
+          .order('max_operational_risk_score', { ascending: false })
+          .order('max_daily_precipitation', { ascending: false })
+          .order('max_wind_speed', { ascending: false })
           .limit(10);
 
         if (rankingError) {
           throw rankingError;
         }
 
+        const rankingOrdenado = [...(rankingData || [])].sort((a, b) => {
+          const scoreA = Number(a.score_op_quadrante ?? 0);
+          const scoreB = Number(b.score_op_quadrante ?? 0);
+
+          if (scoreB !== scoreA) {
+            return scoreB - scoreA;
+          }
+
+          const acumuladoA = Number(a.accumulated_operational_risk_score ?? 0);
+          const acumuladoB = Number(b.accumulated_operational_risk_score ?? 0);
+
+          if (acumuladoB !== acumuladoA) {
+            return acumuladoB - acumuladoA;
+          }
+
+          const maxScoreA = Number(a.max_operational_risk_score ?? 0);
+          const maxScoreB = Number(b.max_operational_risk_score ?? 0);
+
+          if (maxScoreB !== maxScoreA) {
+            return maxScoreB - maxScoreA;
+          }
+
+          const chuvaA = Number(a.max_daily_precipitation ?? 0);
+          const chuvaB = Number(b.max_daily_precipitation ?? 0);
+
+          if (chuvaB !== chuvaA) {
+            return chuvaB - chuvaA;
+          }
+
+          const ventoA = Number(a.max_wind_speed ?? 0);
+          const ventoB = Number(b.max_wind_speed ?? 0);
+
+          return ventoB - ventoA;
+        });
+
         setMunicipalitySummary(summaryData as MunicipalitySummaryRow | null);
         setMunicipalityDailyRows((dailyData || []) as MunicipalityDailyRow[]);
-        setMunicipalityRankingRows(
-          (rankingData || []) as MunicipalityRankingRow[]
-        );
+        setMunicipalityRankingRows(rankingOrdenado as MunicipalityRankingRow[]);
 
         if (!dailyData || dailyData.length === 0) {
           setMensagem({
@@ -1288,13 +1326,7 @@ function EcoForecastAnalysisContent() {
                       </p>
 
                       <span className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-300">
-                        Score{' '}
-                        {row.max_operational_risk_score !== null
-                          ? formatarNumero(
-                              row.max_operational_risk_score,
-                              0
-                            )
-                          : 0}
+                        Score{Number(row.score_op_quadrante ?? 0)}
                       </span>
                     </div>
 

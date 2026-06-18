@@ -200,6 +200,58 @@ export default function EcoForecastDashboardPage() {
 
         setOperationalSummary(operationalMap);
 
+        const getOperationalRow = (gridCellId: string) => {
+          if (operationalMap instanceof Map) {
+            return operationalMap.get(gridCellId);
+          }
+
+          return operationalMap[gridCellId];
+        };
+
+        const getAccumulatedScore = (gridCellId: string) => {
+          const row = getOperationalRow(gridCellId);
+
+          return Number(row?.accumulated_operational_risk_score ?? 0);
+        };
+
+        const getMaxScore = (gridCellId: string) => {
+          const row = getOperationalRow(gridCellId);
+
+          return Number(row?.max_operational_risk_score ?? 0);
+        };
+
+        const getScoreOperacional = (gridCellId: string) => {
+          const accumulatedScore = getAccumulatedScore(gridCellId);
+
+          if (accumulatedScore > 0) {
+            return Math.round(accumulatedScore);
+          }
+
+          return Math.round(getMaxScore(gridCellId));
+        };
+
+        const getStatusFromOperationalScore = (score: number) => {
+          if (score >= 5) {
+            return 'Crítico';
+          }
+
+          if (score >= 3) {
+            return 'Alto';
+          }
+
+          return 'Normal';
+        };
+
+        const pesoStatus: Record<string, number> = {
+          Crítico: 4,
+          Critico: 4,
+          Alto: 3,
+          Atenção: 2,
+          Atencao: 2,
+          Normal: 1,
+          'Sem histórico': 0
+        };
+
         const datasAtualizacao = gridCells
           .map((cell) => cell.last_forecast_update_at)
           .filter(Boolean)
@@ -225,6 +277,11 @@ export default function EcoForecastDashboardPage() {
 
             const temHistorico = Number(totalHistorico || 0) > 0;
 
+            const accumulatedScore = getAccumulatedScore(cell.id);
+            const maxScore = getMaxScore(cell.id);
+            const scoreOperacional = getScoreOperacional(cell.id);
+            const statusOperacional = getStatusFromOperationalScore(scoreOperacional);
+
             if (!temHistorico) {
               return {
                 id: cell.id,
@@ -235,7 +292,10 @@ export default function EcoForecastDashboardPage() {
                 status: 'Sem histórico',
                 variable_name: null,
                 anomaly_date: null,
-                boundary_geojson: cell.boundary_geojson
+                boundary_geojson: cell.boundary_geojson,
+                operational_risk_score: scoreOperacional,
+                max_operational_risk_score: maxScore,
+                accumulated_operational_risk_score: accumulatedScore
               } as PixelSummary;
             }
 
@@ -259,29 +319,63 @@ export default function EcoForecastDashboardPage() {
               name: cell.code,
               latitude: Number(cell.center_latitude),
               longitude: Number(cell.center_longitude),
-              status: temAlerta ? anomalias[0].risk_level : 'Normal',
+              status: statusOperacional,
               variable_name: temAlerta ? anomalias[0].variable_name : null,
               anomaly_date: temAlerta ? anomalias[0].anomaly_date : null,
-              boundary_geojson: cell.boundary_geojson
+              boundary_geojson: cell.boundary_geojson,
+              operational_risk_score: scoreOperacional,
+              max_operational_risk_score: maxScore,
+              accumulated_operational_risk_score: accumulatedScore
             } as PixelSummary;
           })
         );
 
-        setSummary(listaResumos);
+        const listaResumosOrdenada = [...listaResumos].sort((a, b) => {
+          const scoreA = Number(a.operational_risk_score ?? 0);
+          const scoreB = Number(b.operational_risk_score ?? 0);
+
+          if (scoreB !== scoreA) {
+            return scoreB - scoreA;
+          }
+
+          const accumulatedA = Number(
+            a.accumulated_operational_risk_score ?? 0
+          );
+          const accumulatedB = Number(
+            b.accumulated_operational_risk_score ?? 0
+          );
+
+          if (accumulatedB !== accumulatedA) {
+            return accumulatedB - accumulatedA;
+          }
+
+          const maxA = Number(a.max_operational_risk_score ?? 0);
+          const maxB = Number(b.max_operational_risk_score ?? 0);
+
+          if (maxB !== maxA) {
+            return maxB - maxA;
+          }
+
+          const pesoA = pesoStatus[a.status] ?? 0;
+          const pesoB = pesoStatus[b.status] ?? 0;
+
+          return pesoB - pesoA;
+        });
+
+        setSummary(listaResumosOrdenada);
 
         setTotalAnomalias(
-          listaResumos.filter(
+          listaResumosOrdenada.filter(
             (quadrante) =>
               quadrante.status === 'Alto' || quadrante.status === 'Crítico'
           ).length
         );
       } catch (error) {
-        console.error('Erro ao montar visão geral:', error);
+        console.error('Erro ao carregar resumo:', error);
       } finally {
         setCarregando(false);
       }
     }
-
     carregarResumoVisaoGeral();
   }, []);
 
@@ -308,7 +402,26 @@ export default function EcoForecastDashboardPage() {
       );
     }
 
-    return resultado;
+    return [...resultado].sort((a, b) => {
+      const scoreA = Number(a.operational_risk_score ?? 0);
+      const scoreB = Number(b.operational_risk_score ?? 0);
+
+      if (scoreB !== scoreA) {
+        return scoreB - scoreA;
+      }
+
+      const accumulatedA = Number(a.accumulated_operational_risk_score ?? 0);
+      const accumulatedB = Number(b.accumulated_operational_risk_score ?? 0);
+
+      if (accumulatedB !== accumulatedA) {
+        return accumulatedB - accumulatedA;
+      }
+
+      const maxA = Number(a.max_operational_risk_score ?? 0);
+      const maxB = Number(b.max_operational_risk_score ?? 0);
+
+      return maxB - maxA;
+    });
   }, [busca, statusFilter, summary]);
 
   const quadrantesPriorizados = useMemo(() => {
