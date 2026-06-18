@@ -121,7 +121,7 @@ function montarPopupHtml(pixel: PixelSummary) {
       </p>
 
       <p style="font-size: 12px; color: #334155; margin: 4px 0;">
-        Último registro: <strong>${escapeHtml(formatarData(pixel.anomaly_date))}</strong>
+        Última anomalia: <strong>${escapeHtml(formatarData(pixel.anomaly_date))}</strong>
       </p>
 
       <p style="font-size: 10px; color: #64748b; margin: 8px 0 0; font-family: monospace;">

@@ -18,47 +18,37 @@ const glossary: GlossaryItem[] = [
   {
     term: 'Quadrante H3',
     description:
-      'Unidade espacial usada para dividir a área urbana em pequenos polígonos de análise. Cada quadrante recebe previsões, histórico climático e indicadores próprios.'
+      'Unidade espacial padronizada que divide a área urbana em polígonos hexagonais. Permite o cruzamento preciso de dados climáticos com infraestrutura local.'
   },
   {
-    term: 'Histórico climático',
+    term: 'Histórico climático (Baseline)',
     description:
-      'Série de dados meteorológicos passados usada como referência para comparar a previsão atual com o comportamento esperado do quadrante.'
+      'Série de dados meteorológicos passados que atua como assinatura natural do quadrante, servindo de base para identificar desvios futuros.'
   },
   {
-    term: 'Previsão climática',
+    term: 'Anomalia Estatística',
     description:
-      'Dados projetados para os próximos dias, incluindo temperatura, chuva, vento, umidade e outras variáveis meteorológicas.'
+      'Desvio matemático (z-score) entre a previsão meteorológica e o padrão histórico esperado. Indica condições atípicas para aquele trecho da cidade.'
   },
   {
-    term: 'Anomalia',
+    term: 'Score Operacional',
     description:
-      'Desvio relevante entre a previsão e o padrão histórico esperado. Uma anomalia indica que a condição prevista está fora do comportamento usual.'
+      'Indicador de priorização de risco focado na resiliência da rede. Combina intensidade de chuvas, ventos e calor para alertar sobre potenciais danos físicos (FEC).'
   },
   {
-    term: 'Evento composto',
+    term: 'Evento Composto (Compound Event)',
     description:
-      'Situação em que múltiplas variáveis climáticas se desviam ao mesmo tempo, como calor elevado, baixa umidade e estresse hídrico.'
+      'Ocorrência simultânea de variáveis extremas (ex: tempestade com ventania). Historicamente, são os eventos que mais estressam as equipes de campo e a defesa civil.'
   },
   {
-    term: 'Score operacional',
+    term: 'Extremo Histórico (P95)',
     description:
-      'Indicador de priorização voltado à infraestrutura urbana e continuidade elétrica. Considera principalmente chuva forte, vento forte, eventos compostos e temperatura elevada.'
+      'Valor de referência que representa o topo da série histórica. Indica que a condição prevista supera 95% de tudo o que já foi registrado no local.'
   },
   {
-    term: 'P95',
+    term: 'Indicadores ANEEL (DEC/FEC)',
     description:
-      'Percentil 95 da série histórica. Representa um valor alto, superado por cerca de 5% dos registros históricos.'
-  },
-  {
-  term: 'Condição ambiental',
-  description:
-    'Camada auxiliar que reúne variáveis como umidade baixa, radiação elevada, evapotranspiração e solo seco. Essas variáveis ajudam na interpretação ambiental, mas não indicam sozinhas risco direto de interrupção de energia.'
-},
-  {
-    term: 'DEC/FEC',
-    description:
-      'Indicadores regulatórios da ANEEL usados para validação temporal agregada. Permitem comparar a pressão climática mensal do EcoGrid com o desempenho mensal de continuidade do fornecimento.'
+      'Métricas regulatórias de continuidade do serviço elétrico. São cruzados temporalmente com os alertas do EcoGrid para validar a eficácia do monitoramento.'
   }
 ];
 
@@ -101,8 +91,8 @@ export default function SobrePage() {
   const linkClass = (path: string) =>
     `flex flex-col items-center gap-1 text-xs font-medium transition-colors ${
       pathname === path
-        ? 'text-sky-400 font-bold'
-        : 'text-slate-400 hover:text-slate-200'
+        ? 'text-sky-600 font-bold'
+        : 'text-slate-500 hover:text-slate-800'
     }`;
 
   return (
@@ -110,7 +100,7 @@ export default function SobrePage() {
       <div className="min-h-screen w-full bg-slate-950 px-4 py-6 font-sans text-slate-100 max-w-md mx-auto shadow-2xl border-x border-slate-800 pb-24">
         <header className="mb-6 border-b border-slate-800 pb-4">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-lg font-bold text-sky-400">Sobre o EcoGrid</h1>
+            <h1 className="text-lg font-bold text-purple-500">Sobre o EcoGrid</h1>
 
             <span className="rounded-full bg-slate-800 px-2 py-1 text-xs font-bold uppercase text-slate-300">
               v1.0
@@ -187,7 +177,7 @@ export default function SobrePage() {
                   key={step.title}
                   className="flex gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3"
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-600 text-xs font-black text-white">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple-600 text-xs font-black text-white">
                     {step.icon}
                   </div>
 
@@ -204,11 +194,6 @@ export default function SobrePage() {
               ))}
             </div>
 
-            <p className="mt-4 rounded-xl border border-sky-900/50 bg-sky-950/20 p-3 text-xs leading-relaxed text-sky-200">
-              Dica: para apresentação, use o fluxo Painel → Quadrante →
-              Análise. Esse caminho mostra a jornada completa de identificação,
-              priorização e interpretação do risco.
-            </p>
           </section>
 
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
@@ -443,12 +428,12 @@ export default function SobrePage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-4">
-            <h2 className="text-base font-bold text-amber-200">
+          <section className="rounded-2xl border border-purple-900/50 bg-purple-950/20 p-4">
+            <h2 className="text-base font-bold text-purple-300">
               Limitações do protótipo
             </h2>
 
-            <div className="mt-3 space-y-3 text-xs leading-relaxed text-amber-100/80">
+            <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-300">
               <p>
                 O EcoGrid é um protótipo demonstrativo. Os alertas não
                 substituem sistemas oficiais de defesa civil, operação elétrica
@@ -521,25 +506,20 @@ export default function SobrePage() {
           </section>
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/90 backdrop-blur border-t border-slate-800 py-3 px-6 flex justify-around shadow-xl z-50">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-3 border-t border-slate-200 bg-white/95 px-2 py-2 shadow-xl backdrop-blur">
           <Link href="/" className={linkClass('/')}>
-            <span>◼</span>
-            <span>Painel</span>
-          </Link>
-
-          <Link href="/configuracao" className={linkClass('/configuracao')}>
-            <span>◆</span>
-            <span>Dados</span>
+            <span className="text-base leading-none mb-1">📊</span>
+            <span className="truncate">Painel</span>
           </Link>
 
           <Link href="/analise" className={linkClass('/analise')}>
-            <span>▲</span>
-            <span>Análise</span>
+            <span className="text-base leading-none mb-1">🧠</span>
+            <span className="truncate">Análise</span>
           </Link>
 
           <Link href="/sobre" className={linkClass('/sobre')}>
-            <span>?</span>
-            <span>Sobre</span>
+            <span className="text-base leading-none mb-1">?</span>
+            <span className="truncate">Sobre</span>
           </Link>
         </nav>
       </div>

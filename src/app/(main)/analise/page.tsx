@@ -213,12 +213,12 @@ const chartMargin = { top: 8, right: 8, left: -20, bottom: 32 };
 const legendStyle = {
   paddingTop: '10px',
   fontSize: '12px',
-  color: '#cbd5e1'
+  color: '#94a3b8'
 };
 
 const tooltipStyle = {
-  backgroundColor: '#0f172a',
-  borderColor: '#334155',
+  backgroundColor: '#09090b',
+  borderColor: '#27272a',
   color: '#f8fafc'
 };
 
@@ -521,8 +521,8 @@ function EcoForecastAnalysisContent() {
   const linkClass = (path: string) =>
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition-colors ${
       pathname === path
-        ? 'text-sky-400 font-bold'
-        : 'text-slate-400 hover:text-slate-200'
+        ? 'text-sky-600 font-bold'
+        : 'text-slate-500 hover:text-slate-800'
     }`;
 
   const modoUrl = searchParams.get('modo');
@@ -1013,7 +1013,7 @@ function EcoForecastAnalysisContent() {
   return (
     <div className="mx-auto min-h-screen w-full max-w-md border-x border-slate-800 bg-slate-950 px-4 py-6 pb-24 font-sans text-slate-100 shadow-2xl">
       <header className="mb-6 border-b border-slate-800 pb-4">
-        <h1 className="text-lg font-bold text-sky-400">
+        <h1 className="text-lg font-bold text-purple-500">
           Análise Operacional
         </h1>
 
@@ -1222,7 +1222,7 @@ function EcoForecastAnalysisContent() {
               >
                 <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
                   <LineChart data={municipalityChartData} margin={chartMargin}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                     <XAxis dataKey="data" stroke="#64748b" />
                     <YAxis stroke="#64748b" />
                     <Tooltip contentStyle={tooltipStyle} />
@@ -1253,7 +1253,7 @@ function EcoForecastAnalysisContent() {
               >
                 <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
                   <ComposedChart data={municipalityChartData} margin={chartMargin}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                     <XAxis dataKey="data" stroke="#64748b" />
                     <YAxis stroke="#64748b" />
                     <Tooltip contentStyle={tooltipStyle} />
@@ -1281,7 +1281,7 @@ function EcoForecastAnalysisContent() {
               >
                 <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
                   <LineChart data={municipalityChartData} margin={chartMargin}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                     <XAxis dataKey="data" stroke="#64748b" />
                     <YAxis stroke="#64748b" />
                     <Tooltip contentStyle={tooltipStyle} />
@@ -1442,7 +1442,7 @@ function EcoForecastAnalysisContent() {
           >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
               <LineChart data={chartData} margin={chartMargin}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
                 <Tooltip contentStyle={tooltipStyle} />
@@ -1491,7 +1491,7 @@ function EcoForecastAnalysisContent() {
           >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
               <ComposedChart data={chartData} margin={chartMargin}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
                 <Tooltip contentStyle={tooltipStyle} />
@@ -1529,7 +1529,7 @@ function EcoForecastAnalysisContent() {
           >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
               <LineChart data={chartData} margin={chartMargin}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
                 <Tooltip contentStyle={tooltipStyle} />
@@ -1570,7 +1570,7 @@ function EcoForecastAnalysisContent() {
           >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
               <LineChart data={chartData} margin={chartMargin}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" domain={[0, 100]} />
                 <Tooltip contentStyle={tooltipStyle} />
@@ -1615,7 +1615,7 @@ function EcoForecastAnalysisContent() {
           >
             <ResponsiveContainer width="100%" height={240} minWidth={1} minHeight={1}>
               <ComposedChart data={compositeScoreData} margin={chartMargin}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="data" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
                 <Tooltip contentStyle={tooltipStyle} />
@@ -1724,15 +1724,10 @@ function EcoForecastAnalysisContent() {
         </section>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-4 border-t border-slate-800 bg-slate-900/95 px-2 py-2 shadow-xl backdrop-blur">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-3 border-t border-slate-200 bg-white/95 px-2 py-2 shadow-xl backdrop-blur">
         <Link href="/" className={linkClass('/')}>
           <span className="text-base leading-none">📊</span>
           <span className="truncate">Painel</span>
-        </Link>
-
-        <Link href="/configuracao" className={linkClass('/configuracao')}>
-          <span className="text-base leading-none">🗄️</span>
-          <span className="truncate">Dados</span>
         </Link>
 
         <Link href="/analise" className={linkClass('/analise')}>

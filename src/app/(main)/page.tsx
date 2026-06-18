@@ -148,8 +148,8 @@ export default function EcoForecastDashboardPage() {
   const linkClass = (path: string) =>
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition-colors ${
       pathname === path
-        ? 'text-sky-400 font-bold'
-        : 'text-slate-400 hover:text-slate-200'
+        ? 'text-purple-600 font-bold'
+        : 'text-slate-500 hover:text-slate-800'
     }`;
 
   const handleSelectPixel = useCallback((pixelId: string) => {
@@ -529,36 +529,33 @@ export default function EcoForecastDashboardPage() {
   const getStatusUi = (status: RiskStatus) => {
     if (status === 'Sem histórico') {
       return {
-        badgeClass: 'bg-slate-800 text-slate-300 border-slate-700',
-        dotClass: 'bg-slate-500',
-        markerClass: 'bg-slate-600 border-slate-300 shadow-slate-500/30',
-        cardClass: 'border-slate-800 bg-slate-900/50'
+        badgeClass: 'bg-slate-900 text-slate-400 border-slate-800',
+        dotClass: 'bg-slate-600',
+        markerClass: 'bg-slate-800 text-slate-300 border-slate-600',
+        cardClass: 'bg-slate-900 border-slate-800 shadow-lg'
       };
     }
-
     if (status === 'Crítico') {
       return {
-        badgeClass: 'bg-rose-950/40 text-rose-400 border-rose-800',
-        dotClass: 'bg-rose-500',
-        markerClass: 'bg-rose-500 border-rose-200 shadow-rose-500/50',
-        cardClass: 'border-rose-900/50 bg-rose-950/20'
+        badgeClass: 'bg-red-950/40 text-red-400 border-red-900/50',
+        dotClass: 'bg-red-500',
+        markerClass: 'bg-red-500 text-white border-red-400 shadow-lg shadow-red-500/20',
+        cardClass: 'bg-slate-900 border-red-900/30 shadow-lg'
       };
     }
-
     if (status === 'Alto') {
       return {
-        badgeClass: 'bg-amber-950/40 text-amber-400 border-amber-800',
-        dotClass: 'bg-amber-500',
-        markerClass: 'bg-amber-500 border-amber-200 shadow-amber-500/50',
-        cardClass: 'border-amber-900/50 bg-amber-950/20'
+        badgeClass: 'bg-orange-950/40 text-orange-400 border-orange-900/50',
+        dotClass: 'bg-orange-500',
+        markerClass: 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20',
+        cardClass: 'bg-slate-900 border-orange-900/30 shadow-lg'
       };
     }
-
     return {
-      badgeClass: 'bg-emerald-950/40 text-emerald-400 border-emerald-800',
-      dotClass: 'bg-emerald-500',
-      markerClass: 'bg-emerald-500 border-emerald-200 shadow-emerald-500/50',
-      cardClass: 'border-slate-800 bg-slate-900'
+      badgeClass: 'bg-purple-950/40 text-purple-400 border-purple-900/50',
+      dotClass: 'bg-purple-500',
+      markerClass: 'bg-purple-500 text-white border-purple-400 shadow-lg shadow-purple-500/20',
+      cardClass: 'bg-slate-900 border-slate-800 shadow-lg'
     };
   };
 
@@ -596,7 +593,7 @@ export default function EcoForecastDashboardPage() {
       <div className="min-h-screen w-full bg-slate-950 px-4 py-6 font-sans text-slate-100 max-w-md mx-auto shadow-2xl border-x border-slate-800 pb-24">
         <header className="mb-6 border-b border-slate-800 pb-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-sky-400">EcoGrid</h1>
+            <h1 className="text-2xl font-bold text-purple-500">EcoGrid</h1>
 
             <span className="text-xs bg-slate-800 text-slate-400 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
               Sala de Situação
@@ -881,7 +878,7 @@ export default function EcoForecastDashboardPage() {
                     <span className="text-slate-200">
                       {getVariableLabel(selectedPixel.variable_name)}
                     </span>{' '}
-                    · Último registro:{' '}
+                    · Última anomalia:{' '}
                     <span className="text-slate-200">
                       {formatarData(selectedPixel.anomaly_date)}
                     </span>
@@ -983,7 +980,7 @@ export default function EcoForecastDashboardPage() {
                         </p>
 
                         <p className="text-xs text-slate-500">
-                          Último registro:{' '}
+                          Última anomalia:{' '}
                           <span className="text-slate-300">
                             {formatarData(pixel.anomaly_date)}
                           </span>
@@ -1092,15 +1089,10 @@ export default function EcoForecastDashboardPage() {
         </section>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-4 border-t border-slate-800 bg-slate-900/95 px-2 py-2 shadow-xl backdrop-blur">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-3 border-t border-slate-200 bg-white/95 px-2 py-2 shadow-xl backdrop-blur">
         <Link href="/" className={linkClass('/')}>
           <span className="text-base leading-none">📊</span>
           <span className="truncate">Painel</span>
-        </Link>
-
-        <Link href="/configuracao" className={linkClass('/configuracao')}>
-          <span className="text-base leading-none">🗄️</span>
-          <span className="truncate">Dados</span>
         </Link>
 
         <Link href="/analise" className={linkClass('/analise')}>

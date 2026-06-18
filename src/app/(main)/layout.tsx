@@ -10,8 +10,8 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   const linkClass = (path: string) =>
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition-colors ${
       pathname === path
-        ? 'text-sky-400 font-bold'
-        : 'text-slate-400 hover:text-slate-200'
+        ? 'text-purple-400 font-bold'
+        : 'text-slate-500 hover:text-slate-300'
     }`;
 
   return (
@@ -20,18 +20,13 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
       <nav
         aria-label="Navegação principal"
-        className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-4 border-t border-slate-800 bg-slate-900/95 px-2 py-2 shadow-xl backdrop-blur"
+        className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-3 border-t border-slate-800 bg-slate-100 px-2 py-2 shadow-xl backdrop-blur"
       >
         <Link href="/" className={linkClass('/')}>
           <span className="text-base leading-none">📊</span>
           <span className="truncate">Painel</span>
         </Link>
-
-        <Link href="/configuracao" className={linkClass('/configuracao')}>
-          <span className="text-base leading-none">🗄️</span>
-          <span className="truncate">Dados</span>
-        </Link>
-
+        
         <Link href="/analise" className={linkClass('/analise')}>
           <span className="text-base leading-none">🧠</span>
           <span className="truncate">Análise</span>
