@@ -858,31 +858,28 @@ export default function EcoForecastDashboardPage() {
           </div>
 
           {selectedPixel && (
-            <div className="mt-3 rounded-xl border border-sky-900/50 bg-sky-950/20 p-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-sky-300">
+            <div className="mt-3 rounded-xl border border-purple-900/50 bg-purple-950/20 p-3 shadow-lg">
+              <p className="text-xs font-bold uppercase tracking-wider text-purple-400">
                 Quadrante selecionado
               </p>
 
-              <div className="flex items-center justify-between gap-3 mt-1">
+              <div className="flex items-center justify-between gap-3 mt-2">
                 <div>
-                  <p className="text-sm font-semibold text-slate-100">
+                  <p className="text-sm font-bold text-slate-100">
                     {selectedPixel.code}
                   </p>
 
-                  <p className="text-xs text-slate-400 mt-1">
-                    Status:{' '}
-                    <span className="text-slate-200">
-                      {getStatusLabel(selectedPixel.status)}
-                    </span>{' '}
-                    · Variável:{' '}
-                    <span className="text-slate-200">
-                      {getVariableLabel(selectedPixel.variable_name)}
-                    </span>{' '}
-                    · Última anomalia:{' '}
-                    <span className="text-slate-200">
-                      {formatarData(selectedPixel.anomaly_date)}
-                    </span>
-                  </p>
+                  <div className="mt-2 flex flex-col gap-1 text-xs text-slate-400">
+                    <p>
+                      Status: <span className="font-semibold text-slate-200">{getStatusLabel(selectedPixel.status)}</span>
+                    </p>
+                    <p>
+                      Variável: <span className="font-semibold text-slate-200">{getVariableLabel(selectedPixel.variable_name)}</span>
+                    </p>
+                    <p>
+                      Última anomalia: <span className="font-semibold text-slate-200">{formatarData(selectedPixel.anomaly_date)}</span>
+                    </p>
+                  </div>
                 </div>
 
                 <Link
