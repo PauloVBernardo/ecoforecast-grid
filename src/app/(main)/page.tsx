@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -609,19 +610,36 @@ export default function EcoForecastDashboardPage() {
     <div className="bg-slate-950 min-h-screen">
       <div className="min-h-screen w-full bg-slate-950 px-4 py-6 font-sans text-slate-100 max-w-md mx-auto shadow-2xl border-x border-slate-800 pb-24">
         <header className="mb-6 border-b border-slate-800 pb-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-purple-500">EcoGrid</h1>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-slate-800 bg-white p-1 shadow-lg">
+                <Image
+                  src="/images/ecogrid-logo.png"
+                  alt="Logo EcoGrid"
+                  width={56}
+                  height={56}
+                  priority
+                  className="h-full w-full object-contain"
+                />
+              </div>
 
-            <span className="text-xs bg-slate-800 text-slate-400 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-black leading-tight text-green-600">
+                  EcoGrid
+                </h1>
+
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                  Monitoramento urbano por quadrantes da área urbana de Goiânia
+                </p>
+              </div>
+            </div>
+
+            <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
               Sala de Situação
             </span>
           </div>
 
-          <p className="text-xs text-slate-400 mt-1">
-            Monitoramento urbano por quadrantes da área urbana de Goiânia
-          </p>
-
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="mt-3 text-xs text-slate-500">
             Última atualização: {formatarDataHora(ultimaAtualizacao)}
           </p>
         </header>
