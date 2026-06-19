@@ -329,7 +329,7 @@ function getRiskCardClass(riskLevel: RiskByDate['riskLevel']) {
     return 'border-yellow-800 bg-yellow-950/20 text-yellow-200';
   }
 
-  return 'border-slate-800 bg-slate-900 text-slate-400';
+  return 'border-slate-800 bg-slate-900 text-slate-300';
 }
 
 function getOperationalAlertPresentation(
@@ -494,7 +494,7 @@ function KpiCard({
 }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
-      <p className="text-xs font-bold uppercase leading-tight text-slate-500">
+      <p className="text-xs font-bold uppercase leading-tight  text-slate-300">
         {label}
       </p>
       <p className={`mt-1 text-lg font-black ${tone}`}>{value}</p>
@@ -513,10 +513,10 @@ function ChartShell({
 }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
-      <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-slate-400">
+      <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-slate-300">
         {title}
       </h3>
-      <p className="mb-3 text-xs leading-relaxed text-slate-500">
+      <p className="mb-3 text-xs leading-relaxed  text-slate-300">
         {description}
       </p>
       <div className="h-[260px] min-h-[260px] w-full min-w-0 overflow-hidden text-xs">
@@ -535,7 +535,7 @@ function EcoForecastAnalysisContent() {
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition-colors ${
       pathname === path
         ? 'text-sky-600 font-bold'
-        : 'text-slate-500 hover:text-slate-800'
+        : ' text-slate-300 hover:text-slate-800'
     }`;
 
   const modoUrl = searchParams.get('modo');
@@ -1030,7 +1030,7 @@ function EcoForecastAnalysisContent() {
           Análise Operacional
         </h1>
 
-        <p className="mt-1 text-xs leading-relaxed text-slate-400">
+        <p className="mt-1 text-xs leading-relaxed text-slate-300">
           Avaliação diária de risco climático por visão consolidada e por
           quadrante.
         </p>
@@ -1049,7 +1049,7 @@ function EcoForecastAnalysisContent() {
       )}
 
       <section className="mb-5 rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-sm">
-        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-300">
           Tipo de análise
         </label>
 
@@ -1060,7 +1060,7 @@ function EcoForecastAnalysisContent() {
             className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition-colors ${
               modoAnalise === 'municipio'
                 ? 'border-sky-500 bg-sky-600 text-white'
-                : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-sky-700 hover:text-slate-200'
+                : 'border-slate-800 bg-slate-950 text-slate-300 hover:border-sky-700 hover:text-slate-200'
             }`}
           >
             Visão geral
@@ -1072,14 +1072,14 @@ function EcoForecastAnalysisContent() {
             className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition-colors ${
               modoAnalise === 'quadrante'
                 ? 'border-sky-500 bg-sky-600 text-white'
-                : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-sky-700 hover:text-slate-200'
+                : 'border-slate-800 bg-slate-950 text-slate-300 hover:border-sky-700 hover:text-slate-200'
             }`}
           >
             Quadrante
           </button>
         </div>
 
-        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-300">
           {modoAnalise === 'quadrante'
             ? 'Selecione o quadrante H3'
             : 'Área consolidada'}
@@ -1108,13 +1108,13 @@ function EcoForecastAnalysisContent() {
             type="button"
             onClick={carregarAnalise}
             disabled={carregandoAnalise}
-            className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-sky-500 active:bg-sky-700 disabled:bg-slate-800 disabled:text-slate-500"
+            className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white shadow-md transition-colors hover:bg-sky-500 active:bg-sky-700 disabled:bg-slate-800 disabled: text-slate-300"
           >
             {carregandoAnalise ? 'Carregando...' : 'Carregar'}
           </button>
         </div>
 
-        <p className="mt-3 rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-500">
+        <p className="mt-3 rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs  text-slate-300">
           Alvo atual: {alvoNome}
         </p>
       </section>
@@ -1126,7 +1126,7 @@ function EcoForecastAnalysisContent() {
               Visão consolidada da área urbana de Goiânia
             </h2>
 
-            <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            <p className="mt-2 text-xs leading-relaxed  text-slate-300">
               Esta visão consolida os quadrantes H3 ativos do protótipo. Os
               indicadores traduzem a previsão dos próximos dias em leitura
               executiva para priorização operacional.
@@ -1201,7 +1201,7 @@ function EcoForecastAnalysisContent() {
 
           {municipalityRiskByDate.length > 0 && (
             <section>
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-300">
                 Régua diária municipal
               </h3>
 
@@ -1220,7 +1220,7 @@ function EcoForecastAnalysisContent() {
                 ))}
               </div>
 
-              <p className="mt-2 text-xs leading-relaxed text-slate-500">
+              <p className="mt-2 text-xs leading-relaxed  text-slate-300">
                 A régua resume o maior nível de risco operacional observado
                 entre os quadrantes ativos em cada dia.
               </p>
@@ -1323,7 +1323,7 @@ function EcoForecastAnalysisContent() {
 
           {municipalityRankingRows.length > 0 && (
             <section>
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-300">
                 Quadrantes mais relevantes no consolidado
               </h3>
 
@@ -1343,7 +1343,7 @@ function EcoForecastAnalysisContent() {
                       </span>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs leading-relaxed text-slate-400">
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs leading-relaxed text-slate-300">
                       <p>Chuva forte: {row.heavy_rain_days} dia(s)</p>
                       <p>Vento forte: {row.high_wind_days} dia(s)</p>
                       <p>
@@ -1421,7 +1421,7 @@ function EcoForecastAnalysisContent() {
 
       {modoAnalise === 'quadrante' && riskByDate.length > 0 && (
         <section className="mb-6">
-          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-400">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-300">
             Régua diária de risco
           </h3>
 
@@ -1440,7 +1440,7 @@ function EcoForecastAnalysisContent() {
             ))}
           </div>
 
-          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+          <p className="mt-2 text-xs leading-relaxed  text-slate-300">
             A régua mostra o maior nível de alerta estatístico salvo para cada dia.
             Para diferenciar risco operacional de anomalia estatística composta, consulte
             os cards detalhados e os gráficos individuais.
@@ -1655,13 +1655,13 @@ function EcoForecastAnalysisContent() {
 
       {modoAnalise === 'quadrante' && (
         <section className="mt-6 space-y-3">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">
             Alertas calculados
           </h3>
 
           {anomalyRows.length === 0 ? (
             <div className="rounded-xl border border-slate-900 bg-slate-900/40 p-4 text-center">
-              <p className="text-xs leading-relaxed text-slate-500">
+              <p className="text-xs leading-relaxed  text-slate-300">
                 🌤️ Nenhuma anomalia salva para este quadrante no horizonte de
                 previsão atual.
               </p>
@@ -1682,7 +1682,7 @@ function EcoForecastAnalysisContent() {
                       {alert.title}
                     </span>
 
-                    <p className="text-xs font-medium text-slate-400">
+                    <p className="text-xs font-medium text-slate-300">
                       Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
                     </p>
                   </div>
@@ -1709,17 +1709,17 @@ function EcoForecastAnalysisContent() {
                       {alert.category}
                     </span>
 
-                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-400">
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-300">
                       Projeção: {formatarDataCompleta(anomalia.anomaly_date)}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-3">
-                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-400">
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-300">
                       {alert.metricLabel}: {alert.metricValue}
                     </span>
 
-                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-400">
+                    <span className="rounded-md border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-slate-300">
                       {alert.limitLabel}: {alert.limitValue}
                     </span>
                   </div>

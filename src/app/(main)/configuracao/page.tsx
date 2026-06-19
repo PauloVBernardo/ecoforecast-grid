@@ -40,7 +40,7 @@ function EcoForecastConfigurationContent() {
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition-colors ${
       pathname === path
         ? 'text-sky-600 font-bold'
-        : 'text-slate-500 hover:text-slate-800'
+        : ' text-slate-300 hover:text-slate-800'
     }`;
 
   const [gridCells, setGridCells] = useState<GridCell[]>([]);
@@ -215,7 +215,7 @@ function EcoForecastConfigurationContent() {
       <header className="mb-6 border-b border-slate-800 pb-4">
         <h1 className="text-2xl font-bold text-sky-400">Dados</h1>
 
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-slate-300">
           Administração, dados, atualização e auditoria dos dados climáticos
         </p>
       </header>
@@ -239,7 +239,7 @@ function EcoForecastConfigurationContent() {
 
         <div className="grid grid-cols-4 gap-2 mb-4">
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-xs font-bold uppercase text-slate-500">
+            <p className="text-xs font-bold uppercase text-slate-300">
               Total
             </p>
             <p className="text-lg font-black text-slate-200">
@@ -248,7 +248,7 @@ function EcoForecastConfigurationContent() {
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-xs font-bold uppercase text-slate-500">
+            <p className="text-xs font-bold uppercase text-slate-300">
               Hist.
             </p>
             <p className="text-lg font-black text-emerald-400">
@@ -257,7 +257,7 @@ function EcoForecastConfigurationContent() {
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-xs font-bold uppercase text-slate-500">
+            <p className="text-xs font-bold uppercase text-slate-300">
               Prev.
             </p>
             <p className="text-lg font-black text-sky-400">
@@ -266,7 +266,7 @@ function EcoForecastConfigurationContent() {
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2 text-center">
-            <p className="text-xs font-bold uppercase text-slate-500">
+            <p className="text-xs font-bold uppercase text-slate-300">
               Pend.
             </p>
             <p className="text-lg font-black text-amber-400">
@@ -286,7 +286,7 @@ function EcoForecastConfigurationContent() {
           }
           className={`w-full rounded-lg px-4 py-3 text-sm font-bold transition ${
             isProduction || executandoJob
-              ? 'cursor-not-allowed bg-slate-700 text-slate-400'
+              ? 'cursor-not-allowed bg-slate-700 text-slate-300'
               : 'bg-sky-500 text-white hover:bg-sky-400'
           }`}
         >
@@ -311,7 +311,7 @@ function EcoForecastConfigurationContent() {
           </div>
         )}
 
-        <p className="mt-3 text-xs leading-relaxed text-slate-500">
+        <p className="mt-3 text-xs leading-relaxed  text-slate-300">
           Esta tela é administrativa. O painel operacional deve apenas ler os
           dados já processados no Supabase.
         </p>
@@ -324,7 +324,7 @@ function EcoForecastConfigurationContent() {
         </h2>
 
         {jobRuns.length === 0 ? (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs  text-slate-300">
             Nenhuma execução registrada ainda.
           </p>
         ) : (
@@ -344,21 +344,21 @@ function EcoForecastConfigurationContent() {
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs  text-slate-300 mt-1">
                   Início: {formatarDataHora(job.started_at)}
                 </p>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs  text-slate-300">
                   Fim: {formatarDataHora(job.finished_at)}
                 </p>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs  text-slate-300">
                   Processados: {job.processed_count} · Falhas:{' '}
                   {job.failed_count}
                 </p>
 
                 {job.message && (
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs  text-slate-300 mt-1">
                     Mensagem: {job.message}
                   </p>
                 )}
@@ -406,17 +406,17 @@ function EcoForecastConfigurationContent() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-500 font-mono mt-1">
+                    <p className="text-xs  text-slate-300 font-mono mt-1">
                       Lat: {Number(cell.center_latitude).toFixed(4)} | Lon:{' '}
                       {Number(cell.center_longitude).toFixed(4)}
                     </p>
 
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs  text-slate-300 mt-1">
                       Histórico: {cell.history_count} registros · Previsão:{' '}
                       {cell.forecast_count} registros
                     </p>
 
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs  text-slate-300 mt-1">
                       Última previsão:{' '}
                       {formatarDataHora(cell.last_forecast_update_at)}
                     </p>
@@ -426,7 +426,7 @@ function EcoForecastConfigurationContent() {
                     className={`h-fit text-xs font-bold uppercase rounded-full border px-2 py-0.5 ${
                       temForecast
                         ? 'bg-sky-950/40 text-sky-300 border-sky-800'
-                        : 'bg-slate-900 text-slate-400 border-slate-700'
+                        : 'bg-slate-900 text-slate-300 border-slate-700'
                     }`}
                   >
                     {temForecast ? 'Previsão OK' : 'Sem previsão'}

@@ -92,7 +92,7 @@ export default function SobrePage() {
     `flex flex-col items-center gap-1 text-xs font-medium transition-colors ${
       pathname === path
         ? 'text-sky-600 font-bold'
-        : 'text-slate-500 hover:text-slate-800'
+        : ' text-slate-300 hover:text-slate-800'
     }`;
 
   return (
@@ -107,7 +107,7 @@ export default function SobrePage() {
             </span>
           </div>
 
-          <p className="mt-2 text-xs leading-relaxed text-slate-400">
+          <p className="mt-2 text-xs leading-relaxed text-slate-300">
             Guia rápido, dicionário de indicadores, origem dos dados e
             informações metodológicas do protótipo.
           </p>
@@ -119,7 +119,7 @@ export default function SobrePage() {
               O que é a aplicação?
             </h2>
 
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">
+            <p className="mt-2 text-xs leading-relaxed text-slate-300">
               O EcoGrid é um protótipo de monitoramento climático operacional.
               A aplicação divide a área urbana de Goiânia em quadrantes e cruza
               histórico climático, previsão meteorológica e indicadores de risco
@@ -129,7 +129,7 @@ export default function SobrePage() {
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Escopo
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -138,7 +138,7 @@ export default function SobrePage() {
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Unidade
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -147,7 +147,7 @@ export default function SobrePage() {
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Horizonte
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -156,7 +156,7 @@ export default function SobrePage() {
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Uso
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -186,7 +186,7 @@ export default function SobrePage() {
                       {step.title}
                     </h3>
 
-                    <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                    <p className="mt-1 text-xs leading-relaxed text-slate-300">
                       {step.description}
                     </p>
                   </div>
@@ -211,7 +211,7 @@ export default function SobrePage() {
                     {item.term}
                   </h3>
 
-                  <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                  <p className="mt-1 text-xs leading-relaxed text-slate-300">
                     {item.description}
                   </p>
                 </div>
@@ -230,7 +230,7 @@ export default function SobrePage() {
                   Open-Meteo
                 </h3>
 
-                <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">
                   Fonte meteorológica usada para histórico climático e previsão
                   dos próximos dias. Os dados são associados aos centros dos
                   quadrantes monitorados.
@@ -242,7 +242,7 @@ export default function SobrePage() {
                   Supabase
                 </h3>
 
-                <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">
                   Banco de dados utilizado para armazenar quadrantes, séries
                   históricas, previsões, anomalias e execuções dos jobs.
                 </p>
@@ -253,7 +253,7 @@ export default function SobrePage() {
                   Validação regulatória ANEEL DEC/FEC
                 </h3>
 
-                <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">
                   Os indicadores DEC e FEC são usados como validação temporal agregada.
                   Como esses dados são mensais e associados a conjuntos de unidades
                   consumidoras, eles não validam diretamente cada quadrante H3. A comparação
@@ -269,7 +269,7 @@ export default function SobrePage() {
               Metodologia resumida
             </h2>
 
-            <div className="mt-4 space-y-3 text-xs leading-relaxed text-slate-400">
+            <div className="mt-4 space-y-3 text-xs leading-relaxed text-slate-300">
               <p>
                 A aplicação calcula referências históricas por quadrante e
                 compara essas referências com as previsões futuras.
@@ -297,7 +297,7 @@ export default function SobrePage() {
                   <span className="transition group-open:rotate-180">▼</span>
                 </summary>
                 <div className="mt-4 flex flex-col gap-2">
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-300">
                     O termômetro: como o sistema avalia cada variável isoladamente contra o padrão local.
                   </p>
                   <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
@@ -312,7 +312,7 @@ export default function SobrePage() {
                   <span className="transition group-open:rotate-180">▼</span>
                 </summary>
                 <div className="mt-4 flex flex-col gap-2">
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-300">
                     O radar: esquema metodológico de detecção de anomalias estatísticas compostas.
                   </p>
                   <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
@@ -327,7 +327,7 @@ export default function SobrePage() {
                   <span className="transition group-open:rotate-180">▼</span>
                 </summary>
                 <div className="mt-4 flex flex-col gap-2">
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-300">
                     A triagem: como a aplicação transforma previsão em priorização para cada quadrante.
                   </p>
                   <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
@@ -342,7 +342,7 @@ export default function SobrePage() {
                   <span className="transition group-open:rotate-180">▼</span>
                 </summary>
                 <div className="mt-4 flex flex-col gap-2">
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-300">
                     A prova: comparação entre a pressão climática e os indicadores da ANEEL.
                   </p>
                   <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
@@ -366,49 +366,49 @@ export default function SobrePage() {
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Período comparável
                 </p>
                 <p className="mt-1 text-sm font-black text-sky-300">
                   35 meses
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs  text-slate-300">
                   jun/2023 a abr/2026
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Base regulatória
                 </p>
                 <p className="mt-1 text-sm font-black text-sky-300">
                   DEC/FEC
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs  text-slate-300">
                   Equatorial GO
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Score x DEC
                 </p>
                 <p className="mt-1 text-sm font-black text-emerald-300">
                   0,375
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs  text-slate-300">
                   Correlação positiva moderada
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Score x FEC
                 </p>
                 <p className="mt-1 text-sm font-black text-emerald-300">
                   0,441
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs  text-slate-300">
                   Melhor aderência observada
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function SobrePage() {
                   Como interpretar o resultado?
                 </summary>
 
-                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-400">
+                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-300">
                   <p>
                     A correlação positiva indica que meses com maior pressão
                     climático-operacional no EcoGrid tendem a coincidir com
@@ -442,7 +442,7 @@ export default function SobrePage() {
                   O que foi comparado?
                 </summary>
 
-                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-400">
+                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-300">
                   <p>
                     O EcoGrid foi agregado mensalmente a partir do histórico
                     climático dos quadrantes H3 ativos. Esse agregado foi
@@ -463,7 +463,7 @@ export default function SobrePage() {
                   Limitações da validação
                 </summary>
 
-                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-400">
+                <div className="mt-3 space-y-3 text-xs leading-relaxed text-slate-300">
                   <p>
                     Nesta versão, a validação utiliza DEC e FEC apurados médios,
                     pois os limites regulatórios não foram integrados à base
@@ -529,7 +529,7 @@ export default function SobrePage() {
 
             <div className="mt-4 space-y-3">
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Projeto
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -538,7 +538,7 @@ export default function SobrePage() {
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Autor
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -547,7 +547,7 @@ export default function SobrePage() {
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Versão
                 </p>
                 <p className="mt-1 text-xs text-slate-300">
@@ -556,7 +556,7 @@ export default function SobrePage() {
               </div>
 
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <p className="text-xs font-bold uppercase text-slate-500">
+                <p className="text-xs font-bold uppercase text-slate-300">
                   Status
                 </p>
                 <p className="mt-1 text-xs text-slate-300">

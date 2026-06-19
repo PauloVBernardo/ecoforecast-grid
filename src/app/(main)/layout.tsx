@@ -12,7 +12,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     `flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 text-xs font-medium transition-colors ${
       pathname === path
         ? 'text-purple-400 font-bold'
-        : 'text-slate-500 hover:text-slate-300'
+        : ' text-slate-700 hover:text-slate-400'
     }`;
 
   return (
