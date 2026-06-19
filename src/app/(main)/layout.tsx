@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { LayoutDashboard, Activity, Info } from 'lucide-react';
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -23,17 +24,17 @@ export default function MainLayout({ children }: { children: ReactNode }) {
         className="fixed bottom-0 left-0 right-0 z-50 mx-auto grid max-w-md grid-cols-3 border-t border-slate-800 bg-slate-100 px-2 py-2 shadow-xl backdrop-blur"
       >
         <Link href="/" className={linkClass('/')}>
-          <span className="text-base leading-none">📊</span>
+          <LayoutDashboard className="h-5 w-5 mb-0.5" strokeWidth={2.5} />
           <span className="truncate">Painel</span>
         </Link>
         
         <Link href="/analise" className={linkClass('/analise')}>
-          <span className="text-base leading-none">🧠</span>
+          <Activity className="h-5 w-5 mb-0.5" strokeWidth={2.5} />
           <span className="truncate">Análise</span>
         </Link>
 
         <Link href="/sobre" className={linkClass('/sobre')}>
-          <span className="text-base leading-none">?</span>
+          <Info className="h-5 w-5 mb-0.5" strokeWidth={2.5} />
           <span className="truncate">Sobre</span>
         </Link>
       </nav>

@@ -290,6 +290,67 @@ export default function SobrePage() {
                 elétrico direto.
               </p>
             </div>
+            <div className="mt-6 space-y-3">
+              <details className="group rounded-xl border border-slate-800 bg-slate-950 p-3 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between text-sm font-bold text-purple-400">
+                  <span>📊 Ver infográfico: Análise Univariada</span>
+                  <span className="transition group-open:rotate-180">▼</span>
+                </summary>
+                <div className="mt-4 flex flex-col gap-2">
+                  <p className="text-xs text-slate-400">
+                    O termômetro: como o sistema avalia cada variável isoladamente contra o padrão local.
+                  </p>
+                  <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
+                    <img src="/metodologia-univariada.png" alt="Infográfico de Análise Univariada" className="w-full h-auto object-contain rounded" />
+                  </div>
+                </div>
+              </details>
+
+              <details className="group rounded-xl border border-slate-800 bg-slate-950 p-3 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between text-sm font-bold text-purple-400">
+                  <span>📊 Ver infográfico: Distância de Mahalanobis</span>
+                  <span className="transition group-open:rotate-180">▼</span>
+                </summary>
+                <div className="mt-4 flex flex-col gap-2">
+                  <p className="text-xs text-slate-400">
+                    O radar: esquema metodológico de detecção de anomalias estatísticas compostas.
+                  </p>
+                  <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
+                    <img src="/metodologia-mahalanobis.png" alt="Infográfico explicativo da Distância de Mahalanobis" className="w-full h-auto object-contain rounded" />
+                  </div>
+                </div>
+              </details>
+
+              <details className="group rounded-xl border border-slate-800 bg-slate-950 p-3 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between text-sm font-bold text-purple-400">
+                  <span>📊 Ver infográfico: Score Operacional</span>
+                  <span className="transition group-open:rotate-180">▼</span>
+                </summary>
+                <div className="mt-4 flex flex-col gap-2">
+                  <p className="text-xs text-slate-400">
+                    A triagem: como a aplicação transforma previsão em priorização para cada quadrante.
+                  </p>
+                  <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
+                    <img src="/metodologia-score.png" alt="Infográfico de Score Operacional" className="w-full h-auto object-contain rounded" />
+                  </div>
+                </div>
+              </details>
+
+              <details className="group rounded-xl border border-slate-800 bg-slate-950 p-3 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between text-sm font-bold text-purple-400">
+                  <span>📊 Ver infográfico: Validação DEC/FEC</span>
+                  <span className="transition group-open:rotate-180">▼</span>
+                </summary>
+                <div className="mt-4 flex flex-col gap-2">
+                  <p className="text-xs text-slate-400">
+                    A prova: comparação entre a pressão climática e os indicadores da ANEEL.
+                  </p>
+                  <div className="w-full rounded-lg border border-slate-800 bg-slate-900 p-2">
+                    <img src="/metodologia-validacao.png" alt="Infográfico de Validação DEC/FEC" className="w-full h-auto object-contain rounded" />
+                  </div>
+                </div>
+              </details>
+            </div>
           </section>
 
           <section className="rounded-2xl border border-sky-900/60 bg-sky-950/20 p-4">
