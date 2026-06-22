@@ -95,3 +95,46 @@ npm install
 
 # Execute o ambiente de desenvolvimento
 npm run dev
+
+## Estrutura do Repositório
+
+```text
+ecogrid-maps/
+├── public/                          # Arquivos estáticos e assets visuais
+│   ├── metodologia-mahalanobis.png  # Infográficos metodológicos da aba "Sobre"
+│   ├── metodologia-score.png
+│   ├── metodologia-univariada.png
+│   └── metodologia-validacao.png
+├── scripts/                         # Pipeline de dados, ETL e rotinas em background
+│   ├── aneel_inspecionar...py       
+│   ├── aneel_preparar_dec_fec.py    # Processamento em Python da base ANEEL (DEC/FEC)
+│   ├── ingest-analysis-grid-history.ts
+│   ├── lista_colunas_goias_distribuidoras.py # Script para filtragem de dados da ANEEL de DEC/FEC
+│   ├── seed-analysis-grid.ts        # Script de geração da malha espacial H3
+│   └── update-forecast-anomalies.ts # Rotina de atualização de previsões e anomalias
+├── src/
+│   ├── app/                         # Frontend da aplicação (Next.js App Router)
+│   │   ├── (main)/                  # Grupo de rotas da aplicação logada
+│   │   │   ├── analise/page.tsx     # Tela de gráficos individuais e diagnóstico
+│   │   │   ├── apresentacao/page.tsx# Rota de demonstração interativa para a banca
+│   │   │   ├── configuracao/page.tsx# Ajustes e parametrizações operacionais
+│   │   │   └── sobre/page.tsx       # Documentação metodológica e glossário
+│   │   ├── api/                     # Rotas de API internas (Serverless Functions)
+│   │   ├── globals.css              # Configurações globais do TailwindCSS
+│   │   └── layout.tsx               # Layout principal da interface
+│   ├── components/                  # Componentes React reutilizáveis
+│   │   ├── charts/                  # Gráficos dinâmicos (Recharts)
+│   │   ├── ui/                      # Elementos base de interface (shadcn/ui ou custom)
+│   │   └── EcoGridLeafletMap.tsx    # Componente central do mapa georreferenciado
+│   ├── lib/                         # Lógicas de negócio, serviços e utilitários
+│   │   ├── jobs/
+│   │   │   └── dailyWeatherJob.ts   # Processamento diário e chamada do motor estatístico
+│   │   ├── statistics/
+│   │   │   └── multivariateAnomaly.ts # Motor matemático (Mahalanobis e Covariância)
+│   │   └── supabase/                # Clientes, tipagens e conexão com o PostgreSQL
+│   └── types/                       # Definições estritas de tipagem do TypeScript
+├── supabase/                        # Configurações, schema e migrations do Supabase
+├── .env.local                       # Variáveis de ambiente secretas (chaves de API)
+├── next.config.ts                   # Configurações de compilação do Next.js
+├── package.json                     # Dependências do projeto (Recharts, Leaflet, H3, etc.)
+└── README.md                        # Documentação principal do repositório
