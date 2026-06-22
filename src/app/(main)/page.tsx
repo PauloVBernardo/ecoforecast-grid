@@ -518,13 +518,12 @@ export default function EcoForecastDashboardPage() {
           ),
         0
       ),
-      scoreAcumulado: values.reduce(
-        (acc, item) =>
-          acc + toNumber(item.accumulated_operational_risk_score),
+      somaScoreOperacional: summary.reduce(
+        (acc, item) => acc + toNumber(item.operational_risk_score),
         0
       )
     };
-  }, [operationalSummary]);
+  }, [operationalSummary, summary]);
 
   const getVariableLabel = (variableName?: string | null) => {
     if (!variableName) return 'Sem anomalia';
@@ -759,18 +758,19 @@ export default function EcoForecastDashboardPage() {
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3">
               <p className="text-xs  text-slate-300 uppercase font-bold">
-                Score acum.
+                Soma score OP.
               </p>
               <p className="text-lg font-black text-rose-300">
-                {formatNumber(resumoOperacional.scoreAcumulado, 0)}
+                {formatNumber(resumoOperacional.somaScoreOperacional, 0)}
               </p>
             </div>
           </div>
-
+         
           <p className="text-xs  text-slate-300 mt-3 leading-relaxed">
-            Os indicadores operacionais priorizam quadrantes com previsão de
-            chuva forte, vento forte, eventos compostos e maior pressão
-            acumulada na janela futura.
+             Os indicadores operacionais mostram a priorização dos quadrantes na
+            janela futura disponível. A soma do score OP. representa a soma dos
+            scores operacionais dos quadrantes ativos, usados na classificação
+            Estável, Alto e Crítico.
           </p>
         </section>
 
