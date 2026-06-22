@@ -1,526 +1,97 @@
 # 🌤️ EcoGrid Maps — Sala de Situação Climática Operacional
 
-> **Aplicação de inteligência climática e validação regulatória para a área urbana de Goiânia**  
-> **Deploy:** https://ecoforecast-grid.vercel.app/  
-> **Stack:** Next.js + TypeScript + Supabase + PostgreSQL + H3 + Leaflet + Open-Meteo
+> **Aplicação de inteligência climática e validação regulatória para a área urbana de Goiânia** > **Deploy:** https://ecoforecast-grid.vercel.app/  
+> **Stack:** Next.js + TailwindCSS + Supabase (PostgreSQL) + H3 + Leaflet + Open-Meteo
 
 ---
 
-## 1. Problema
+## 1. O Problema
 
-Eventos climáticos extremos, como chuva intensa, vento forte, calor elevado e períodos de ar seco, não afetam a cidade de forma homogênea. Mesmo dentro de um mesmo município, alguns trechos urbanos podem concentrar maior pressão climática e maior potencial de impacto operacional.
+Eventos climáticos extremos — como chuvas torrenciais, ventanias, ondas de calor e ar seco — não afetam uma cidade de maneira uniforme, principalmente quando falamos de grandes cidades e metrópoles como Goiânia. Mesmo dentro de um único município, diferentes bairros sofrem pressões ambientais completamente distintas.
 
-No setor elétrico, essa leitura territorial é especialmente relevante porque eventos climáticos podem aumentar a frequência de ocorrências, pressionar equipes de campo e afetar a continuidade do serviço. Porém, boa parte dos monitoramentos tradicionais ainda trabalha com informações agregadas no nível municipal, o que limita a capacidade de antecipação e priorização operacional.
+No setor de distribuição de energia elétrica ou até mesmo para o tabalho de uma prefeitura, essa visão territorial é crítica. O estresse climático é um dos maiores causadores de falhas físicas na rede (quedas de galhos, rompimentos de cabos, sobrecarga de transformadores), o que aumenta a frequência de interrupções, pressiona o despacho de equipes de campo e afeta diretamente a continuidade do serviço prestado à população.
 
-O **EcoGrid Maps** foi desenvolvido como uma sala de situação climática mobile-first para apoiar a leitura operacional da área urbana de Goiânia. A aplicação divide o território em quadrantes H3, acompanha histórico e previsão climática, calcula alertas e compara os resultados com indicadores regulatórios de continuidade da ANEEL, especialmente DEC e FEC.
-
----
-
-## 2. Objetivo da aplicação
-
-O objetivo do projeto é transformar dados climáticos públicos em indicadores operacionais simples, acionáveis e visualmente compreensíveis.
-
-A aplicação busca responder perguntas como:
-
-- Quais quadrantes urbanos apresentam maior pressão climática prevista?
-- Há previsão de chuva forte, vento, calor elevado ou eventos compostos?
-- A condição climática prevista se afasta do padrão histórico daquele quadrante?
-- A combinação das variáveis climáticas previstas é estatisticamente atípica para o histórico local?
-- Meses com maior pressão climática operacional coincidem com pior desempenho de continuidade elétrica?
-- O score climático do EcoGrid apresenta aderência temporal com DEC/FEC?
+Apesar disso, a maioria dos sistemas de monitoramento ainda olha para o clima de forma macro (a tradicional "previsão para a cidade"), dificultando uma antecipação cirúrgica por parte das equipas operacionais. O **EcoGrid Maps** nasce para resolver essa lacuna: é um protótipo *mobile-first* que divide a cidade em pequenos polígonos (quadrantes H3) e cruza o histórico de cada pedaço da cidade com a previsão futura, transformando a meteorologia bruta em uma **priorização operacional acionável**.
 
 ---
 
-## 3. Fontes dos dados
+## 2. Fontes dos Dados
 
-### 3.1 Dados climáticos históricos
+Para construir a inteligência do EcoGrid, unimos dados de três naturezas diferentes:
 
-Os dados climáticos históricos são consumidos via **Open-Meteo Historical / Archive API** e persistidos no Supabase na tabela `climate_series`.
-
-Variáveis utilizadas:
-
-- Temperatura máxima diária
-- Temperatura mínima diária
-- Precipitação acumulada
-- Velocidade do vento
-- Umidade relativa
-- Radiação solar de onda curta
-- Evapotranspiração
-- Umidade do solo na camada de 0 a 7 cm, quando disponível
-
-Esses dados são usados para formar a linha de base histórica de cada quadrante H3.
-
-### 3.2 Dados climáticos de previsão
-
-As previsões são consumidas via **Open-Meteo Forecast API** e persistidas na tabela `climate_forecasts`.
-
-A previsão é usada para compor a sala de situação operacional, os cards por quadrante e os indicadores de risco dos próximos dias.
-
-### 3.3 Grade espacial H3
-
-A malha analítica está armazenada na tabela `analysis_grid`.
-
-Cada célula possui:
-
-- Código do quadrante
-- Índice H3
-- Latitude e longitude central
-- Geometria do polígono em GeoJSON
-- Indicador de ativação para uso na aplicação
-
-A adoção de H3 permite representar a cidade em células geográficas padronizadas, facilitando agregação, visualização em mapa e comparação entre regiões urbanas.
-
-### 3.4 Dados regulatórios ANEEL — DEC/FEC
-
-Para validação temporal, o projeto utiliza a base pública de **Indicadores Coletivos de Continuidade de Energia Elétrica** da ANEEL.
-
-Os dados foram processados para a tabela `aneel_dec_fec_monthly`, contendo:
-
-- Ano de competência
-- Mês de competência
-- Distribuidora
-- Identificador do conjunto de unidades consumidoras
-- Nome do conjunto
-- DEC apurado
-- FEC apurado
-- DEC limite, quando disponível
-- FEC limite, quando disponível
-
-Na versão atual, a validação utiliza dados da **Equatorial GO** e compara os indicadores regulatórios com a pressão climática mensal agregada do EcoGrid.
+1. **Dados Climáticos (Open-Meteo API):** * **Histórico:** Consumimos a *Archive API* (baseada nos modelos globais reanalisados, como o ERA5) para construir uma linha de base (*baseline*) de 3 anos de comportamento climático diário para cada quadrante monitorado.
+   * **Previsão:** Consumimos a *Forecast API* para mapear o horizonte dos próximos 7 dias em tempo real.
+   * *Variáveis coletadas:* Temperatura (máxima e mínima), Precipitação, Velocidade do Vento, Umidade Relativa, Radiação Solar, Evapotranspiração e Umidade do Solo.
+2. **Grade Espacial (Uber H3):** * Utilizamos o sistema global de indexação H3 para fatiar a área urbana de Goiânia em hexágonos padronizados. Diferente de um grid quadrado comum, o hexágono garante distâncias idênticas do centro para todas as suas bordas, otimizando análises de raio geográfico e adjacência.
+3. **Indicadores Regulatórios (ANEEL):** * Para validar se a nossa matemática de risco climático fazia sentido na vida real da rede elétrica, utilizamos a base pública de Continuidade (DEC e FEC) da Equatorial GO (Disponível no site da ANEEL), compreendendo o período de junho de 2023 a abril de 2026.
 
 ---
 
-## 4. Abordagem técnica
+## 3. Abordagem Técnica: O Motor Analítico
 
-### 4.1 Pipeline de ingestão
+O coração do EcoGrid não está apenas em mostrar a previsão do tempo, mas em interpretá-la sob a ótica do impacto. A aplicação processa os dados em **três camadas analíticas complementares**:
 
-O projeto possui scripts e rotinas para preparar a base espacial, carregar histórico climático, atualizar previsões e processar dados regulatórios.
+### Camada 1: O Termômetro (Análise Estatística Univariada)
+Nós olhamos para cada variável isoladamente e perguntamos: *isto é normal para este quadrante nesta época do ano?* O sistema calcula o Desvio Padrão e o Score Padronizado (Z-Score) da previsão contra a média histórica daquele ponto geográfico. É aqui que usamos os limites percentis para definir anomalias de forma bicaudal:
+* **O que é o P95 (Percentil 95)?** Se uma variável (como a temperatura) atinge a faixa do P95, significa que o valor previsto é superior a 95% de todos os dias já registrados na história daquele quadrante. É um evento raro que acende um **Alerta Alto**.
+* **O que é o P99 (Percentil 99)?** É o extremo do extremo. Uma condição meteorológica tão severa que supera 99% de todo o histórico local, gerando um **Alerta Crítico**.
+* *Nota:* O sistema também monitora o limite inferior (**P05**) para identificar anomalias de frio extremo de forma simétrica.
 
-Principais scripts:
+### Camada 2: O Radar (Distância de Mahalanobis / Multivariada)
+A natureza age em sinergia. Às vezes, o vento previsto não quebrou recordes, a chuva não foi torrencial e o calor parece suportável de forma isolada. Contudo, a ocorrência dessas variáveis *exatamente ao mesmo tempo* pode formar uma combinação climática altamente atípica e estressante para o ambiente urbano. 
+Implementamos a lógica da **Distância de Mahalanobis** no backend (`src/lib/statistics/multivariateAnomaly.ts`). Através da matriz de covariância do histórico padronizado, o modelo identifica essas "anomalias compostas", calculando a forma quadrática $D^2 = z^T \Sigma^{-1} z$ para capturar riscos que passariam invisíveis por radares univariados comuns.
+
+### Camada 3: A Triagem (Score Operacional Heurístico)
+A anomalia estatística diz o quão *raro* o clima está, mas a operação de campo precisa saber o que *danifica a infraestrutura*. O Score Operacional traduz a previsão numa escala prática de priorização:
+* Atribui penalidades diretas para chuva forte ($\ge 50\text{mm/dia}$) e ventânia ($\ge 60\text{km/h}$).
+* Aplica um multiplicador de **Bónus de Sinergia** caso ambos ocorram no mesmo dia (evento composto de chuva e vento), simulando o efeito ecológico de fatores limitantes combinados.
+* O resultado gera um ranking em tempo real de quais quadrantes exigem atenção imediata ou mobilização preventiva de equipas de manutenção.
+
+> 📊 **Nota de Interface (UX):** A aplicação possui uma aba "**Sobre**" que contém uma galeria interativa de infográficos expansíveis (*componentes `<details>` estilizados no tema Dark*). Eles detalham visualmente toda esta engrenagem matemática (curva Gaussiana de percentis, elipse de covariância e a validação do negócio) para garantir uma leitura clara tanto para engenheiros como para diretores executivos.
+
+---
+
+## 4. Validação Regulatória (DEC / FEC)
+
+Para comprovar a eficácia e o valor de negócio do protótipo, testamos o modelo contra o histórico real de interrupções da distribuidora local obtido na base da ANEEL.
+
+* **Metodologia de Cruzamento:** Como os dados da ANEEL são publicados por "Conjuntos Elétricos" (irregularidades topológicas das subestações) e o EcoGrid trabalha com hexágonos padronizados, evitou-se um cruzamento espacial direto sem o cadastro GIS completo da rede. A validação foi feita de forma **temporal e agregada**, calculando a correlação entre o estresse climático médio mensal da cidade e as médias de interrupção em Goiânia ao longo de **35 meses**.
+* **Resultados da Correlação de Pearson ($r$):**
+  * **Score EcoGrid × FEC (Frequência):** $0,441$ (Correlação positiva moderada — a maior aderência observada).
+  * **Score EcoGrid × DEC (Duração):** $0,375$ (Correlação positiva moderada).
+  * *Controle:* A correlação da chuva pura isolada com o DEC/FEC ficou próxima de zero ($0,195$ e $-0,026$).
+* **Interpretação Prática:** Os resultados provam que a abordagem multivariada do EcoGrid descreve o estresse real da rede muito melhor do que olhar apenas para a chuva isolada. O modelo correlaciona-se melhor com o **FEC**, confirmando a hipótese de que o clima severo é o gatilho que quebra as estruturas físicas e causa a queda. Já o **DEC** (tempo que a energia fica desligada) sofre influência de fatores externos ao clima, como a logística, tamanho da frota nas ruas e o tempo de deslocamento das equipas.
+
+---
+
+## 5. Limitações do Protótipo
+
+Com o rigor científico necessário para o desenvolvimento do projeto, foram mapeadas as seguintes limitações que delimitam o escopo atual do protótipo:
+
+1. **Ausência de Causalidade Direta:** A correlação de Pearson comprova a aderência estatística temporal (quando a pressão climática sobe, as falhas sobem), mas não dita uma relação de causa e efeito isolada, visto que fatores estruturais da rede e manutenções preventivas também alteram os indicadores.
+2. **Resolução Espacial da Validação:** Devido à natureza opaca dos dados públicos da ANEEL (consolidados por mês e por conjunto), a validação atesta a inteligência do modelo no tempo (meses críticos), mas carece de uma validação georreferenciada micro (evento a evento por quadrante).
+3. **Calibração Heurística:** O Score Operacional utiliza pesos fixos baseados em regras de negócio iniciais. Para ambiente de produção real, estes limiares devem ser refinados via algoritmos de aprendizado de máquina treinados com o histórico de Ordens de Serviço (OS) da concessionária.
+4. **Simplificação da Malha Física:** O grid H3 analisa estritamente a atmosfera e o solo da coordenada. O modelo atual não sabe o volume de ativos (transformadores, quilómetros de cabos nus ou subestações) presentes dentro de cada hexágono.
+5. **PCA como Evolução Futura:** O sistema implementa com sucesso a Distância de Mahalanobis para anomalias estatísticas compostas. A Análise de Componentes Principais (PCA) não foi integrada nesta versão, permanecendo no *roadmap* como melhoria futura para redução de dimensionalidade e eliminação de redundâncias entre as 8 variáveis climáticas.
+
+---
+
+## 6. Como Executar Localmente
+
+### Pré-requisitos
+* Node.js (v18 ou superior)
+* Instância do Supabase ativa (PostgreSQL)
+
+### Instalação
 
 ```bash
-scripts/seed-analysis-grid.ts
-scripts/ingest-analysis-grid-history.ts
-scripts/update-forecast-anomalies.ts
-scripts/aneel_inspecionar_arquivos.py
-scripts/aneel_preparar_dec_fec.py
-```
-
-Fluxo geral:
-
-1. Criação da grade H3 da área urbana de Goiânia.
-2. Carga histórica por quadrante.
-3. Atualização de previsões climáticas.
-4. Cálculo de anomalias e indicadores operacionais.
-5. Preparação da base ANEEL DEC/FEC.
-6. Agregação mensal para validação temporal.
-
-### 4.2 Linha de base estatística univariada
-
-Para cada quadrante, o sistema compara valores previstos com o comportamento histórico local. A lógica usa média histórica, desvio padrão e percentis para identificar desvios relevantes por variável.
-
-A leitura estatística univariada segue a ideia de um score padronizado:
-
-```text
-z = (valor previsto - média histórica) / desvio padrão histórico
-```
-
-Desvios mais altos indicam maior afastamento do padrão esperado para aquele local e período. Essa camada apoia a interpretação individual de temperatura, chuva, vento e umidade nos gráficos da tela de análise.
-
-### 4.3 Análise multivariada de anomalia estatística
-
-O projeto também implementa uma camada de **anomalia estatística composta** no arquivo:
-
-```text
-src/lib/statistics/multivariateAnomaly.ts
-```
-
-Essa rotina é chamada no fluxo diário de atualização de dados, a partir do `dailyWeatherJob.ts`, e avalia se a combinação das variáveis climáticas previstas é atípica em relação ao histórico do próprio quadrante.
-
-A análise usa as seguintes variáveis climáticas em conjunto:
-
-- Temperatura máxima
-- Temperatura mínima
-- Precipitação
-- Velocidade do vento
-- Umidade relativa
-- Radiação solar de onda curta
-- Evapotranspiração
-- Umidade do solo superficial
-
-O procedimento é:
-
-1. Converter cada dia histórico em um vetor climático multivariado.
-2. Remover linhas incompletas para garantir consistência do vetor.
-3. Padronizar as variáveis históricas por média e desvio padrão.
-4. Calcular a matriz de covariância dos vetores padronizados.
-5. Aplicar regularização diagonal (`RIDGE = 0.05`) para reduzir instabilidade numérica.
-6. Inverter a matriz de covariância.
-7. Calcular a forma quadrática:
-
-```text
-D² = zᵀ Σ⁻¹ z
-```
-
-Essa medida é equivalente à lógica de **distância de Mahalanobis** aplicada sobre variáveis padronizadas. Ela considera a relação conjunta entre variáveis e não apenas o pico isolado de uma variável.
-
-Os limites de alerta são calculados empiricamente a partir das próprias distâncias históricas do quadrante:
-
-```text
-P95 → Alerta Alto
-P99 → Alerta Crítico
-```
-
-A saída é gravada como `multivariate_weather_forecast` na tabela `grid_anomalies`, com:
-
-- distância multivariada calculada;
-- limite estatístico usado;
-- nível estatístico de alerta;
-- principais variáveis que mais contribuíram para o desvio;
-- mensagem explicativa da anomalia estatística composta.
-
-Essa camada deve ser interpretada como **sinal estatístico complementar**. Ela indica uma combinação rara de variáveis para o histórico local, mas não significa automaticamente chuva forte, vento severo, umidade crítica ou calor extremo. A leitura operacional deve considerar também os gráficos individuais e o score operacional do quadrante.
-
-### 4.4 Score operacional climático
-
-Além da detecção estatística, o projeto utiliza um score operacional voltado à priorização de risco para infraestrutura urbana e continuidade elétrica.
-
-O score principal considera:
-
-- Chuva forte
-- Vento forte
-- Evento composto de chuva com vento
-- Temperatura elevada
-
-Variáveis como umidade baixa, radiação elevada, evapotranspiração e solo seco são tratadas como camada ambiental auxiliar. Elas ajudam a interpretar contexto de saúde pública, vegetação e condição ambiental, mas não são consideradas isoladamente como risco elétrico direto.
-
-O score operacional é diferente da anomalia estatística multivariada. O score traduz a previsão em uma escala prática de priorização operacional, enquanto a análise multivariada identifica combinações climáticas estatisticamente raras.
-
-### 4.5 Views operacionais no PostgreSQL
-
-Parte importante da lógica analítica foi movida para views no Supabase/PostgreSQL, permitindo que o front-end consuma dados já agregados e consistentes.
-
-Views principais:
-
-```text
-climate_forecast_operational_indicators
-climate_forecast_operational_summary
-climate_forecast_quadrant_ranking
-climate_forecast_municipality_daily_summary
-climate_forecast_municipality_summary
-ecogrid_monthly_operational_pressure
-ecogrid_monthly_operational_pressure_seasonal
-aneel_dec_fec_monthly_agg
-ecogrid_aneel_validation_monthly
-ecogrid_aneel_validation_summary
-ecogrid_aneel_validation_ranked_months
-ecogrid_aneel_critical_months
-ecogrid_aneel_validation_diagnostics
-```
-
----
-
-## 5. Validação regulatória com DEC/FEC
-
-A validação regulatória foi incluída para verificar se meses com maior pressão climático-operacional também apresentam pior desempenho nos indicadores de continuidade.
-
-A comparação é **temporal e agregada**, não espacial por quadrante.
-
-### 5.1 Período comparável
-
-Após a preparação dos dados, foram identificados **35 meses comparáveis** entre EcoGrid e ANEEL:
-
-```text
-junho/2023 a abril/2026
-```
-
-Meses não comparáveis:
-
-- Janeiro/2023 a maio/2023: sem histórico climático suficiente no EcoGrid.
-- Maio/2026 e junho/2026: sem DEC/FEC disponível na base importada.
-
-### 5.2 Resultado da correlação
-
-Resultado obtido na validação:
-
-| Métrica | Correlação |
-|---|---:|
-| Score EcoGrid x DEC médio apurado | 0,375 |
-| Score EcoGrid x FEC médio apurado | 0,441 |
-| Precipitação x DEC médio apurado | 0,195 |
-| Precipitação x FEC médio apurado | -0,026 |
-
-A validação utilizou o tipo:
-
-```text
-apurado_medio_sem_limite
-```
-
-Isso significa que, nesta versão, a comparação considera DEC e FEC apurados médios, pois os limites regulatórios não foram integrados à base final.
-
-### 5.3 Interpretação
-
-O resultado indica uma **correlação positiva moderada** entre o score climático-operacional do EcoGrid e os indicadores de continuidade, com aderência mais forte para FEC.
-
-A leitura é coerente com a hipótese operacional: eventos climáticos tendem a influenciar mais diretamente a frequência de ocorrências do que a duração média das interrupções. A duração também depende de fatores operacionais, logísticos e estruturais, como tempo de atendimento, disponibilidade de equipe, acesso ao local e complexidade da falha.
-
-O resultado não demonstra causalidade, mas fornece evidência exploratória de aderência temporal entre pressão climática e desempenho de continuidade.
-
----
-
-## 6. Modelagem de dados
-
-Principais tabelas:
-
-### `analysis_grid`
-
-Tabela com os quadrantes H3 da área urbana analisada.
-
-Campos principais:
-
-- `id`
-- `code`
-- `h3_index`
-- `center_latitude`
-- `center_longitude`
-- `boundary_geojson`
-- `is_active`
-- `last_history_ingestion_at`
-- `last_forecast_update_at`
-
-### `climate_series`
-
-Histórico climático diário por quadrante.
-
-Campos principais:
-
-- `grid_cell_id`
-- `measurement_date`
-- `max_temperature`
-- `min_temperature`
-- `precipitation`
-- `wind_speed`
-- `relative_humidity`
-- `shortwave_radiation`
-- `evapotranspiration`
-- `soil_moisture_0_to_7cm`
-
-### `climate_forecasts`
-
-Previsões climáticas por quadrante.
-
-Campos principais:
-
-- `grid_cell_id`
-- `forecast_date`
-- `max_temperature`
-- `min_temperature`
-- `precipitation`
-- `wind_speed`
-- `relative_humidity`
-- `shortwave_radiation`
-- `evapotranspiration`
-- `soil_moisture_0_to_7cm`
-- `model_source`
-- `fetched_at`
-
-### `grid_anomalies`
-
-Tabela de alertas e anomalias calculadas.
-
-Campos principais:
-
-- `grid_cell_id`
-- `anomaly_date`
-- `variable_name`
-- `observed_value`
-- `historical_mean`
-- `standard_deviation`
-- `sigma_score`
-- `risk_level`
-- `message`
-
-Para anomalias univariadas, os campos representam valor previsto, média histórica, desvio padrão e score padronizado.
-
-Para `multivariate_weather_forecast`, a interpretação é diferente:
-
-- `observed_value`: distância multivariada calculada;
-- `historical_mean`: limite estatístico usado na comparação;
-- `standard_deviation`: limite adicional de referência, quando salvo pelo pipeline;
-- `risk_level`: nível estatístico do desvio, `Alto` ou `Crítico`;
-- `message`: explicação da anomalia estatística composta.
-
-### `aneel_dec_fec_monthly`
-
-Tabela com os indicadores DEC/FEC tratados para validação.
-
-Campos principais:
-
-- `ano`
-- `mes`
-- `distribuidora`
-- `ide_conj_und_consumidoras`
-- `conjunto`
-- `municipio_referencia`
-- `dec_apurado`
-- `dec_limite`
-- `fec_apurado`
-- `fec_limite`
-
----
-
-## 7. Aplicação e experiência de uso
-
-A aplicação foi construída com foco mobile-first e leitura rápida em campo ou em sala de situação.
-
-Principais páginas:
-
-### Painel
-
-Visão executiva com mapa, quadrantes, alertas e cards de situação operacional.
-
-### Dados
-
-Página de apoio para sincronização e acompanhamento das cargas de dados.
-
-### Análise
-
-Página com leitura técnica por quadrante, gráficos climáticos, anomalias e interpretação operacional.
-
-### Sobre
-
-Página de documentação, metodologia, fontes dos dados, validação e limitações do protótipo.
-
----
-
-## 8. Como executar localmente
-
-### 8.1 Instalar dependências
-
-```bash
+# Clone o repositório e instale as dependências
 npm install
-```
 
-### 8.2 Configurar variáveis de ambiente
+# Configure as variáveis de ambiente no ficheiro .env.local
+# NEXT_PUBLIC_SUPABASE_URL=seu_link_supabase
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
+# SUPABASE_SERVICE_ROLE_KEY=sua_chave_role_service
 
-Crie ou ajuste o arquivo `.env.local`:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-CRON_SECRET=
-```
-
-### 8.3 Executar em desenvolvimento
-
-```bash
+# Execute o ambiente de desenvolvimento
 npm run dev
-```
-
-Se houver erro local com Turbopack, use Webpack:
-
-```bash
-npx next dev --webpack
-```
-
-### 8.4 Build de produção
-
-```bash
-npm run build
-```
-
-### 8.5 Executar preparação ANEEL
-
-```bash
-python scripts/aneel_inspecionar_arquivos.py
-python scripts/aneel_preparar_dec_fec.py
-```
-
-### 8.6 Atualizar previsões e anomalias
-
-```bash
-npx tsx scripts/update-forecast-anomalies.ts
-```
-
-### 8.7 Carregar histórico climático
-
-```bash
-npx tsx scripts/ingest-analysis-grid-history.ts
-```
-
----
-
-## 9. Limitações
-
-### 9.1 Validação temporal, não espacial
-
-A validação com DEC/FEC é agregada por mês. Os indicadores da ANEEL são publicados por conjuntos de unidades consumidoras, enquanto o EcoGrid trabalha com quadrantes H3. Portanto, a validação não comprova impacto específico de um quadrante sobre um conjunto elétrico.
-
-### 9.2 Ausência de causalidade direta
-
-A correlação positiva entre score climático e DEC/FEC indica aderência temporal, mas não demonstra causalidade. A continuidade elétrica também depende de topologia de rede, manutenção, equipes disponíveis, acessibilidade, falhas internas e outros fatores não modelados nesta versão.
-
-### 9.3 Limites regulatórios incompletos
-
-Nesta versão, a validação usa DEC/FEC apurados médios porque os limites regulatórios não foram integrados de forma completa à base final. A comparação com DEC/FEC relativo ao limite fica como evolução futura.
-
-### 9.4 Cobertura temporal limitada
-
-O período comparável da validação regulatória é de 35 meses, entre junho/2023 e abril/2026. Meses sem dados simultâneos entre EcoGrid e ANEEL foram excluídos.
-
-### 9.5 Dados climáticos indiretos
-
-Os dados climáticos vêm de APIs meteorológicas públicas e modelos/reanálises, não de sensores locais instalados em cada quadrante. Isso permite cobertura espacial padronizada, mas pode não capturar microeventos locais.
-
-### 9.6 Score operacional heurístico
-
-O score foi definido com regras técnicas simples e interpretáveis. Ele ainda não foi calibrado com ocorrências reais georreferenciadas de rede elétrica, como quedas de cabos, rompimentos, vegetação sobre rede ou ordens de serviço.
-
-### 9.7 Eventos climáticos de grande escala
-
-Fenômenos como El Niño e La Niña ainda não entram como variáveis explícitas do modelo. Nesta versão, a sazonalidade é tratada pela comparação mensal do histórico climático.
-
-### 9.8 Ativos elétricos não integrados
-
-O modelo ainda não cruza os quadrantes H3 com ativos físicos da rede, como alimentadores, transformadores, subestações, chaves, trechos de rede ou vegetação próxima.
-
-### 9.9 Anomalia multivariada não é risco operacional direto
-
-A distância multivariada identifica combinações estatisticamente raras de variáveis climáticas. Um alerta crítico nessa camada significa criticidade estatística, não necessariamente risco operacional crítico direto.
-
-Por isso, a interpretação deve separar:
-
-- **Anomalia estatística composta:** combinação rara no histórico climático do quadrante.
-- **Score operacional:** priorização prática voltada a infraestrutura urbana e continuidade elétrica.
-
-A decisão operacional deve considerar o conjunto: gráficos individuais, score operacional, anomalia multivariada e contexto do quadrante.
-
-### 9.10 PCA ainda não implementada
-
-A versão atual implementa distância multivariada/Mahalanobis para anomalia estatística composta, mas ainda não implementa PCA. A análise de componentes principais permanece como evolução futura para reduzir dimensionalidade, avaliar redundância entre variáveis e refinar a leitura multivariada.
-
----
-
-## 10. Roadmap
-
-Evoluções previstas:
-
-1. Integrar limites regulatórios de DEC/FEC para calcular indicadores relativos ao limite.
-2. Criar uma tela dedicada de validação regulatória.
-3. Cruzar quadrantes H3 com ativos elétricos e ocorrências operacionais reais.
-4. Incluir dados de vegetação, como NDVI, para risco de queda de galhos.
-5. Incorporar índices climáticos externos, como ENSO, para análise de contexto sazonal.
-6. Calibrar o score operacional com histórico real de ocorrências.
-7. Incorporar PCA para redução de dimensionalidade e refinamento da análise multivariada.
-8. Adicionar camada de priorização operacional por criticidade de ativo.
-
----
-
-## 11. Síntese executiva
-
-O EcoGrid Maps demonstra que é possível transformar dados climáticos públicos em uma leitura operacional territorializada para apoiar decisões em infraestrutura urbana e continuidade elétrica.
-
-A aplicação combina três camadas analíticas principais: leitura estatística univariada, anomalia estatística multivariada com lógica de Mahalanobis e score operacional climático para priorização.
-
-A validação com DEC/FEC mostra aderência temporal positiva entre o score climático-operacional e os indicadores regulatórios da Equatorial GO, especialmente FEC. Isso reforça o potencial da aplicação como ferramenta exploratória de antecipação, priorização e inteligência climática urbana.
